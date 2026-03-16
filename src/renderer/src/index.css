@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 214 35% 96%;
+  --foreground: 220 37% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 37% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 37% 11%;
+  --primary: 201 100% 41%;
+  --primary-foreground: 210 20% 98%;
+  --secondary: 202 69% 22%;
+  --secondary-foreground: 210 20% 98%;
+  --muted: 220 20% 95%;
+  --muted-foreground: 220 17% 38%;
+  --accent: 192 91% 94%;
+  --accent-foreground: 220 37% 11%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 20% 98%;
+  --border: 220 26% 88%;
+  --input: 220 26% 88%;
+  --ring: 201 100% 41%;
+  --radius: 0.9rem;
+}
+
+html.dark {
+  --background: 222 47% 6%;
+  --foreground: 210 20% 96%;
+  --card: 224 34% 10%;
+  --card-foreground: 210 20% 96%;
+  --popover: 224 34% 10%;
+  --popover-foreground: 210 20% 96%;
+  --primary: 196 92% 56%;
+  --primary-foreground: 222 47% 8%;
+  --secondary: 217 32% 18%;
+  --secondary-foreground: 210 20% 96%;
+  --muted: 220 25% 16%;
+  --muted-foreground: 215 20% 74%;
+  --accent: 217 32% 18%;
+  --accent-foreground: 210 20% 96%;
+  --destructive: 0 70% 46%;
+  --destructive-foreground: 210 20% 96%;
+  --border: 218 22% 30%;
+  --input: 218 22% 30%;
+  --ring: 196 92% 56%;
+}
+
+* {
+  @apply border-border;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  background-image:
+    radial-gradient(circle at 10% 15%, rgba(14, 165, 233, 0.16), transparent 38%),
+    radial-gradient(circle at 88% 82%, rgba(249, 115, 22, 0.13), transparent 34%);
+  font-family: 'Avenir Next', 'SF Pro Display', 'Segoe UI', sans-serif;
+}
+
+html.dark body {
+  background-image:
+    radial-gradient(circle at 14% 18%, rgba(34, 211, 238, 0.12), transparent 34%),
+    radial-gradient(circle at 85% 78%, rgba(148, 163, 184, 0.1), transparent 35%);
+}
+
+html.dark .bg-white,
+html.dark .bg-white\/80,
+html.dark .bg-white\/85,
+html.dark .bg-white\/90 {
+  background-color: rgba(15, 23, 42, 0.86) !important;
+}
+
+html.dark .bg-slate-50 {
+  background-color: rgba(30, 41, 59, 0.75) !important;
+}
+
+html.dark .border-slate-100,
+html.dark .border-slate-200,
+html.dark .border-white\/60,
+html.dark .border-white\/70 {
+  border-color: rgba(71, 85, 105, 0.6) !important;
+}
+
+html.dark .text-slate-900 {
+  color: rgb(241, 245, 249) !important;
+}
+
+html.dark .text-slate-800 {
+  color: rgb(226, 232, 240) !important;
+}
+
+html.dark .text-slate-700 {
+  color: rgb(203, 213, 225) !important;
+}
+
+html.dark .text-slate-600,
+html.dark .text-slate-500 {
+  color: rgb(148, 163, 184) !important;
+}
+
+#root {
+  min-height: 100vh;
+}

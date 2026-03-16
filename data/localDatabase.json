@@ -1,0 +1,37 @@
+{
+  "stores": [
+    {
+      "id": "store-default",
+      "name": "Default Store",
+      "currency": "USD",
+      "timezone": "UTC",
+      "isActive": true
+    }
+  ],
+  "roles": [
+    {
+      "id": "role-super-admin",
+      "storeId": "store-default",
+      "name": "super_admin",
+      "description": "System administrator"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-super-admin",
+      "storeId": "store-default",
+      "roleId": "role-super-admin",
+      "username": "admin",
+      "passwordHash": "9486cdfbc37d01748191dfbf6a31fb1b:f833447bcb141be271345c5ddd6abe5fe011eaf0106f69b83e9f1248ce15b66868b86bf37c732c19d0c308ce6fc9d58de12a7831f1f79d589ef520cf002f8cfe",
+      "fullName": "Super Admin",
+      "isActive": true,
+      "status": "active",
+      "grantedFeatureKeys": [],
+      "revokedFeatureKeys": [],
+      "createdAt": "2026-01-01T09:00:00.000Z",
+      "updatedAt": "2026-03-15T14:31:15.243Z",
+      "lastLoginAt": "2026-03-15T14:31:15.243Z",
+      "passwordUpdatedAt": "2026-01-01T09:00:00.000Z"
+    }
+  ]
+}

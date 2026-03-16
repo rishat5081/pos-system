@@ -1,0 +1,16 @@
+{
+  "seededCategories": 250,
+  "seededProducts": 450,
+  "seededCustomers": 300,
+  "stressOrders": 1500,
+  "seedDurationMs": 54.287417000000005,
+  "stressDurationMs": 346.4275419999999,
+  "throughputOrdersPerSecond": 4329.909773744261,
+  "averageLatencyMs": 0.2306074086666684,
+  "p95LatencyMs": 0.32108400000015536,
+  "maxLatencyMs": 29.877750000000106,
+  "finalCategoryCount": 254,
+  "finalProductCount": 454,
+  "finalCustomerCount": 302,
+  "finalOrderCount": 1500
+}

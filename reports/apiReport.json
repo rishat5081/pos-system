@@ -1,0 +1,110 @@
+{
+  "generatedAt": "2026-03-15T14:31:15.245Z",
+  "totalApis": 17,
+  "passedCount": 17,
+  "failedCount": 0,
+  "results": [
+    {
+      "apiName": "auth.login.invalidCredentials",
+      "status": "passed",
+      "durationMs": 58.359375,
+      "detail": "expected error: Invalid username or password"
+    },
+    {
+      "apiName": "auth.login.validCredentials",
+      "status": "passed",
+      "durationMs": 45.23937500000011,
+      "detail": "ok (object result)"
+    },
+    {
+      "apiName": "auth.getSession",
+      "status": "passed",
+      "durationMs": 0.01587500000005093,
+      "detail": "ok (object result)"
+    },
+    {
+      "apiName": "auth.logout",
+      "status": "passed",
+      "durationMs": 0.006791000000021086,
+      "detail": "ok (object result)"
+    },
+    {
+      "apiName": "store.addCategory",
+      "status": "passed",
+      "durationMs": 0.16154200000005403,
+      "detail": "ok (5)"
+    },
+    {
+      "apiName": "store.addProduct",
+      "status": "passed",
+      "durationMs": 0.13779100000010658,
+      "detail": "ok (5)"
+    },
+    {
+      "apiName": "store.addCustomer",
+      "status": "passed",
+      "durationMs": 0.11891700000001038,
+      "detail": "ok (3)"
+    },
+    {
+      "apiName": "store.processCheckout.closedRegisterValidation",
+      "status": "passed",
+      "durationMs": 0.16837499999996908,
+      "detail": "expected error: Open register session before checkout"
+    },
+    {
+      "apiName": "store.startRegisterSession",
+      "status": "passed",
+      "durationMs": 0.06520799999998417,
+      "detail": "ok (object result)"
+    },
+    {
+      "apiName": "store.processCheckout",
+      "status": "passed",
+      "durationMs": 0.40379200000006676,
+      "detail": "ok (object result)"
+    },
+    {
+      "apiName": "store.adjustStock",
+      "status": "passed",
+      "durationMs": 0.09512500000005275,
+      "detail": "ok (object result)"
+    },
+    {
+      "apiName": "store.addCustomerCredit",
+      "status": "passed",
+      "durationMs": 0.13008399999989706,
+      "detail": "ok (90)"
+    },
+    {
+      "apiName": "store.redeemCustomerPoints",
+      "status": "passed",
+      "durationMs": 0.11220800000000963,
+      "detail": "ok (161)"
+    },
+    {
+      "apiName": "store.toggleAttendance",
+      "status": "passed",
+      "durationMs": 0.14483300000006238,
+      "detail": "ok (object result)"
+    },
+    {
+      "apiName": "store.addMeeting",
+      "status": "passed",
+      "durationMs": 0.08754100000010112,
+      "detail": "ok (2)"
+    },
+    {
+      "apiName": "store.repayLoan",
+      "status": "passed",
+      "durationMs": 0.09012499999994361,
+      "detail": "ok (object result)"
+    },
+    {
+      "apiName": "store.endRegisterSession",
+      "status": "passed",
+      "durationMs": 0.05645800000002055,
+      "detail": "ok (object result)"
+    }
+  ]
+}
