@@ -149,8 +149,12 @@ export function OrderManagementPage(): JSX.Element {
   const [invoiceReminderDateInput, setInvoiceReminderDateInput] = useState<string>('');
   const [invoiceNotesInput, setInvoiceNotesInput] = useState<string>('');
   const [deliveryDateByOrder, setDeliveryDateByOrder] = useState<Record<string, string>>({});
+  const [orderPage, setOrderPage] = useState<number>(1);
+  const ordersPerPage = 20;
 
   const filteredOrders = useMemo(() => {
+    setOrderPage(1);
+
     return orders.filter((orderRecord) => {
       const matchesStatus = statusFilter === 'all' || orderRecord.status === statusFilter;
       const normalizedSearch = searchInput.trim().toLowerCase();
@@ -166,6 +170,12 @@ export function OrderManagementPage(): JSX.Element {
       );
     });
   }, [orders, searchInput, statusFilter]);
+
+  const totalOrderPages = Math.max(1, Math.ceil(filteredOrders.length / ordersPerPage));
+  const paginatedOrders = useMemo(
+    () => filteredOrders.slice((orderPage - 1) * ordersPerPage, orderPage * ordersPerPage),
+    [filteredOrders, orderPage]
+  );
 
   const orderExportRows = useMemo(
     () =>
@@ -647,13 +657,40 @@ export function OrderManagementPage(): JSX.Element {
 
       <Card className="border-white/70 bg-white/90 shadow-lg">
         <CardHeader>
-          <CardTitle>Orders ({filteredOrders.length})</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Orders ({filteredOrders.length})</CardTitle>
+            {totalOrderPages > 1 && (
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-8 px-3 text-xs"
+                  disabled={orderPage <= 1}
+                  onClick={() => setOrderPage((p) => Math.max(1, p - 1))}
+                >
+                  Previous
+                </Button>
+                <span className="text-xs text-slate-600">
+                  Page {orderPage} of {totalOrderPages}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-8 px-3 text-xs"
+                  disabled={orderPage >= totalOrderPages}
+                  onClick={() => setOrderPage((p) => Math.min(totalOrderPages, p + 1))}
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           {filteredOrders.length === 0 ? (
             <p className="text-sm text-slate-500">No orders match the current filter.</p>
           ) : (
-            filteredOrders.map((orderRecord) => (
+            paginatedOrders.map((orderRecord) => (
               <div key={orderRecord.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>

@@ -27,8 +27,8 @@ export function LoginPage(): JSX.Element {
   } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: 'admin',
-      password: 'admin123'
+      username: '',
+      password: ''
     }
   });
 

@@ -247,6 +247,7 @@ describe('app flows', () => {
     await user.click(screen.getByRole('button', { name: 'Open Register' }));
     await user.click(screen.getAllByRole('button', { name: 'Add To Cart' })[0]);
     await user.click(screen.getByRole('button', { name: 'Checkout' }));
+    await user.click(await screen.findByRole('button', { name: 'Confirm Payment' }));
 
     expect(await screen.findByText(/Payment successful/i)).toBeInTheDocument();
   });

@@ -90,7 +90,7 @@ export function SetupWizardPage(): JSX.Element {
                 <p className="mt-1 text-sm text-slate-300">Enabled modules: {selectedTemplate.enabledFeatures.length}</p>
               </div>
 
-              <Button type="button" className="w-full" onClick={handleContinue}>
+              <Button type="button" className="w-full" onClick={handleContinue} disabled={!storeNameInput.trim() || !storeCodeInput.trim()}>
                 Complete Setup
               </Button>
             </CardContent>

@@ -23,7 +23,29 @@ export function PosPage(): JSX.Element {
   const [openingCash, setOpeningCash] = useState<string>('500');
   const [lastOrderMessage, setLastOrderMessage] = useState<string>('');
   const [checkoutError, setCheckoutError] = useState<string>('');
+  const [productSearchInput, setProductSearchInput] = useState<string>('');
+  const [showCheckoutConfirm, setShowCheckoutConfirm] = useState<boolean>(false);
+  const [closingSummary, setClosingSummary] = useState<{
+    openingCash: number;
+    totalCashSales: number;
+    expectedClosing: number;
+    currentCash: number;
+  } | null>(null);
   const cartRef = useRef<Record<string, number>>({});
+
+  const filteredProducts = useMemo(() => {
+    const query = productSearchInput.trim().toLowerCase();
+
+    if (!query) {
+      return products;
+    }
+
+    return products.filter(
+      (product) =>
+        product.name.toLowerCase().includes(query) ||
+        product.category.toLowerCase().includes(query)
+    );
+  }, [products, productSearchInput]);
 
   const cartEntries = useMemo(() => Object.entries(cart).filter(([, quantity]) => quantity > 0), [cart]);
 
@@ -115,6 +137,11 @@ export function PosPage(): JSX.Element {
   };
 
   const handleCheckout = (): void => {
+    setShowCheckoutConfirm(true);
+  };
+
+  const confirmCheckout = (): void => {
+    setShowCheckoutConfirm(false);
     const checkoutItems = cartEntries.map(([productId, quantity]) => ({ productId, quantity }));
 
     try {
@@ -141,6 +168,20 @@ export function PosPage(): JSX.Element {
 
   const handleOpenRegister = (): void => {
     startRegisterSession(Number(openingCash) || 0);
+    setClosingSummary(null);
+  };
+
+  const handleCloseRegister = (): void => {
+    const totalCashSales = registerSession.currentCash - registerSession.openingCash;
+    const expectedClosing = registerSession.openingCash + totalCashSales;
+
+    setClosingSummary({
+      openingCash: registerSession.openingCash,
+      totalCashSales,
+      expectedClosing,
+      currentCash: registerSession.currentCash
+    });
+    endRegisterSession();
   };
 
   return (
@@ -168,7 +209,7 @@ export function PosPage(): JSX.Element {
               Open Register
             </Button>
           ) : (
-            <Button type="button" variant="outline" onClick={endRegisterSession}>
+            <Button type="button" variant="outline" onClick={handleCloseRegister}>
               Close Register
             </Button>
           )}
@@ -181,6 +222,42 @@ export function PosPage(): JSX.Element {
         </CardContent>
       </Card>
 
+      {closingSummary && (
+        <Card className="border-white/70 bg-white/90 shadow-lg">
+          <CardHeader>
+            <CardTitle>Register Session Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-4">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs uppercase tracking-[0.1em] text-slate-500">Opening Cash</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">
+                  {formatCurrencyValue(closingSummary.openingCash, globalPreferences)}
+                </p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs uppercase tracking-[0.1em] text-slate-500">Cash Sales</p>
+                <p className="mt-1 text-lg font-semibold text-emerald-700">
+                  {formatCurrencyValue(closingSummary.totalCashSales, globalPreferences)}
+                </p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs uppercase tracking-[0.1em] text-slate-500">Expected Closing</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">
+                  {formatCurrencyValue(closingSummary.expectedClosing, globalPreferences)}
+                </p>
+              </div>
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <p className="text-xs uppercase tracking-[0.1em] text-slate-500">Actual Cash</p>
+                <p className="mt-1 text-lg font-semibold text-slate-900">
+                  {formatCurrencyValue(closingSummary.currentCash, globalPreferences)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
         <Card className="border-white/70 bg-white/90 shadow-lg">
           <CardHeader>
@@ -188,8 +265,13 @@ export function PosPage(): JSX.Element {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-slate-600">Select products, choose payment, and complete checkout.</p>
+            <Input
+              placeholder="Search products by name or category"
+              value={productSearchInput}
+              onChange={(event) => setProductSearchInput(event.target.value)}
+            />
             <div className="grid gap-3 md:grid-cols-2">
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <div key={product.id} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
                   <p className="text-sm font-semibold text-slate-900">{product.name}</p>
                   <p className="text-xs text-slate-500">{product.category}</p>
@@ -356,6 +438,24 @@ export function PosPage(): JSX.Element {
                 Checkout
               </Button>
             </div>
+            {showCheckoutConfirm && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 space-y-3">
+                <p className="text-sm font-semibold text-amber-900">Confirm Checkout</p>
+                <div className="text-sm text-amber-800 space-y-1">
+                  <p>Items: {cartEntries.length}</p>
+                  <p>Total: {formatCurrencyValue(totalAmount, globalPreferences)}</p>
+                  <p>Payment: {paymentMethod}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button type="button" variant="outline" className="h-9" onClick={() => setShowCheckoutConfirm(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="button" className="h-9 bg-emerald-600 hover:bg-emerald-700" onClick={confirmCheckout}>
+                    Confirm Payment
+                  </Button>
+                </div>
+              </div>
+            )}
             {checkoutError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{checkoutError}</p>}
             {lastOrderMessage && (
               <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{lastOrderMessage}</p>

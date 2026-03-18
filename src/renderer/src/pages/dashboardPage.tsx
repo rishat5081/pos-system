@@ -3,13 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrencyValue } from '@/lib/globalFormat';
 import { useStoreOpsStore } from '@/stores/storeOpsStore';
 
-const salesByHour = [420, 560, 740, 680, 880, 1120, 980, 760];
-
 export function DashboardPage(): JSX.Element {
   const todaySales = useStoreOpsStore((state) => state.todaySales);
   const todayOrders = useStoreOpsStore((state) => state.todayOrders);
   const products = useStoreOpsStore((state) => state.products);
   const customers = useStoreOpsStore((state) => state.customers);
+  const orders = useStoreOpsStore((state) => state.orders);
   const staffRecords = useStoreOpsStore((state) => state.staffRecords);
   const registerSession = useStoreOpsStore((state) => state.registerSession);
   const globalPreferences = useStoreOpsStore((state) => state.globalPreferences);
@@ -30,7 +29,33 @@ export function DashboardPage(): JSX.Element {
     [staffRecords]
   );
 
-  const maxSalesBar = Math.max(...salesByHour);
+  const salesByHour = useMemo(() => {
+    const hourlyTotals = new Array<number>(8).fill(0);
+    const today = new Date().toISOString().slice(0, 10);
+
+    for (const order of orders) {
+      if (order.status !== 'completed') {
+        continue;
+      }
+
+      const orderDate = order.createdAt.slice(0, 10);
+
+      if (orderDate !== today) {
+        continue;
+      }
+
+      const hour = new Date(order.createdAt).getHours();
+      const index = hour - 9;
+
+      if (index >= 0 && index < 8) {
+        hourlyTotals[index] += order.totalAmount;
+      }
+    }
+
+    return hourlyTotals;
+  }, [orders]);
+
+  const maxSalesBar = Math.max(...salesByHour, 1);
   const overdueInvoiceCount = useMemo(
     () => invoices.filter((invoiceRecord) => invoiceRecord.status === 'overdue').length,
     [invoices]

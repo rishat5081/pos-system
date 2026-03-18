@@ -1678,8 +1678,8 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
   standardDailyHours: 8,
   maxDailyHours: 12,
   overtimeMultiplier: 1.5,
-  todaySales: 12840,
-  todayOrders: 486,
+  todaySales: 0,
+  todayOrders: 0,
   categories: initialCategories,
   products: initialProducts,
   customers: initialCustomers,
@@ -2377,9 +2377,19 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
 
   setOrderStatus(orderId: string, status: OrderStatus, statusNote = ''): void {
     const normalizedStatusNote = statusNote.trim();
+    const state = get();
+    const order = state.orders.find((orderRecord) => orderRecord.id === orderId);
 
-    set((state) => ({
-      orders: state.orders.map((orderRecord) => {
+    if (!order) {
+      throw new Error(`Order ${orderId} not found`);
+    }
+
+    const isReversal =
+      (status === 'refunded' || status === 'cancelled') &&
+      order.status === 'completed';
+
+    set((previous) => ({
+      orders: previous.orders.map((orderRecord) => {
         if (orderRecord.id !== orderId) {
           return orderRecord;
         }
@@ -2390,7 +2400,50 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
           statusNote: normalizedStatusNote,
           updatedAt: new Date().toISOString()
         };
-      })
+      }),
+      products: isReversal
+        ? previous.products.map((product) => {
+            const orderItem = order.items.find((item) => item.productId === product.id);
+
+            if (!orderItem) {
+              return product;
+            }
+
+            return {
+              ...product,
+              stock: product.stock + orderItem.quantity
+            };
+          })
+        : previous.products,
+      todaySales: isReversal
+        ? roundCurrency(Math.max(0, previous.todaySales - order.totalAmount))
+        : previous.todaySales,
+      todayOrders: isReversal
+        ? Math.max(0, previous.todayOrders - 1)
+        : previous.todayOrders,
+      registerSession:
+        isReversal && order.paymentMethod === 'cash'
+          ? {
+              ...previous.registerSession,
+              currentCash: roundCurrency(
+                Math.max(0, previous.registerSession.currentCash - order.totalAmount)
+              )
+            }
+          : previous.registerSession,
+      customers: isReversal && order.customerId
+        ? previous.customers.map((customerRecord) => {
+            if (customerRecord.id !== order.customerId) {
+              return customerRecord;
+            }
+
+            const earnedPoints = Math.floor(order.totalAmount / 10);
+
+            return {
+              ...customerRecord,
+              loyaltyPoints: Math.max(0, customerRecord.loyaltyPoints - earnedPoints)
+            };
+          })
+        : previous.customers
     }));
   },
 
@@ -2892,6 +2945,10 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
     const state = get();
     const openSession = state.attendanceSessions.find((session) => session.staffId === staffId && !session.clockOutAt);
 
+    if (!openSession) {
+      return;
+    }
+
     set((previous) => ({
       staffRecords: previous.staffRecords.map((staffRecord) => {
         if (staffRecord.id !== staffId) {
@@ -3346,21 +3403,33 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
     }
 
     const sharePerStaff = roundCurrency(state.tipsPoolBalance / eligibleStaffIds.length);
-    const distributedTotal = roundCurrency(sharePerStaff * eligibleStaffIds.length);
+    const baseDistributedTotal = roundCurrency(sharePerStaff * eligibleStaffIds.length);
+    const remainder = roundCurrency(state.tipsPoolBalance - baseDistributedTotal);
 
-    set((previous) => ({
-      tipsPoolBalance: roundCurrency(previous.tipsPoolBalance - distributedTotal),
-      staffRecords: previous.staffRecords.map((staffRecord) => {
-        if (!eligibleStaffIds.includes(staffRecord.id)) {
-          return staffRecord;
-        }
+    set((previous) => {
+      let remainderAssigned = false;
 
-        return {
-          ...staffRecord,
-          tipsEarned: roundCurrency(staffRecord.tipsEarned + sharePerStaff)
-        };
-      })
-    }));
+      return {
+        tipsPoolBalance: 0,
+        staffRecords: previous.staffRecords.map((staffRecord) => {
+          if (!eligibleStaffIds.includes(staffRecord.id)) {
+            return staffRecord;
+          }
+
+          let bonus = sharePerStaff;
+
+          if (!remainderAssigned && remainder > 0) {
+            bonus = roundCurrency(bonus + remainder);
+            remainderAssigned = true;
+          }
+
+          return {
+            ...staffRecord,
+            tipsEarned: roundCurrency(staffRecord.tipsEarned + bonus)
+          };
+        })
+      };
+    });
   },
 
   repayLoan(staffId: string, amount: number): void {
@@ -3391,13 +3460,13 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
       return;
     }
 
-    const nextPayrollRecords: PayrollRecord[] = state.staffRecords.map((staffRecord) => {
+    const nextPayrollRecords: PayrollRecord[] = state.staffRecords.filter((staffRecord) => staffRecord.isActive).map((staffRecord) => {
       const staffSessions = state.attendanceSessions.filter(
         (session) => session.staffId === staffRecord.id && Boolean(session.clockOutAt)
       );
 
       const overtimeHours = staffSessions.reduce((sum, session) => sum + session.overtimeHours, 0);
-      const hourlyRate = staffRecord.monthlySalary / (state.standardDailyHours * 22);
+      const hourlyRate = staffRecord.monthlySalary / (Math.max(1, state.standardDailyHours) * 22);
       const overtimePay = roundCurrency(overtimeHours * hourlyRate * state.overtimeMultiplier);
       const loanDeduction = roundCurrency(Math.min(staffRecord.loanBalance, staffRecord.monthlySalary * 0.1));
       const netSalary = roundCurrency(staffRecord.monthlySalary + overtimePay - loanDeduction);
@@ -3445,17 +3514,17 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
       : null;
 
     if (!normalizedCustomerName || !input.issueDate || !input.dueDate || !input.reminderDate) {
-      return;
+      throw new Error('Customer name, issue date, due date, and reminder date are required');
     }
 
     const amount = sanitizeMoney(input.amount);
 
     if (!amount) {
-      return;
+      throw new Error('Invoice amount must be greater than zero');
     }
 
     if (input.linkedOrderId && !linkedOrder) {
-      return;
+      throw new Error(`Linked order ${input.linkedOrderId} not found`);
     }
 
     const nowIso = new Date().toISOString();
@@ -3640,10 +3709,7 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
           };
         }
 
-        return {
-          ...tableRecord,
-          status: 'occupied'
-        };
+        return tableRecord;
       })
     }));
   },

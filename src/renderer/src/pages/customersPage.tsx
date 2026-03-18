@@ -10,6 +10,7 @@ import {
   parseImportFile,
   type DataExchangeFormat
 } from '@/lib/dataExchange';
+import { formatCurrencyValue } from '@/lib/globalFormat';
 import { useStoreOpsStore } from '@/stores/storeOpsStore';
 
 interface CustomerFormState {
@@ -23,10 +24,6 @@ const initialCustomerFormState: CustomerFormState = {
   phone: '',
   email: ''
 };
-
-function formatCurrency(value: number): string {
-  return `$${value.toFixed(2)}`;
-}
 
 function getLoyaltyTier(points: number): string {
   if (points >= 500) {
@@ -48,6 +45,7 @@ export function CustomersPage(): JSX.Element {
   const customers = useStoreOpsStore((state) => state.customers);
   const orders = useStoreOpsStore((state) => state.orders);
   const customerActivityRecords = useStoreOpsStore((state) => state.customerActivityRecords);
+  const globalPreferences = useStoreOpsStore((state) => state.globalPreferences);
   const addCustomer = useStoreOpsStore((state) => state.addCustomer);
   const importCustomers = useStoreOpsStore((state) => state.importCustomers);
   const addCustomerCredit = useStoreOpsStore((state) => state.addCustomerCredit);
@@ -289,7 +287,7 @@ export function CustomersPage(): JSX.Element {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-semibold text-amber-600">
-              {formatCurrency(customersWithoutWalkIn.reduce((sum, customer) => sum + customer.creditBalance, 0))}
+              {formatCurrencyValue(customersWithoutWalkIn.reduce((sum, customer) => sum + customer.creditBalance, 0), globalPreferences)}
             </p>
           </CardContent>
         </Card>
@@ -396,7 +394,7 @@ export function CustomersPage(): JSX.Element {
                       </div>
                       <div className="text-right text-xs text-slate-600">
                         <p>Points: {customer.loyaltyPoints}</p>
-                        <p>Credit: {formatCurrency(customer.creditBalance)}</p>
+                        <p>Credit: {formatCurrencyValue(customer.creditBalance, globalPreferences)}</p>
                       </div>
                     </div>
                   </button>
@@ -436,7 +434,7 @@ export function CustomersPage(): JSX.Element {
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="rounded-lg border border-slate-200 bg-white p-3">
                       <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">Lifetime Spend</p>
-                      <p className="text-xl font-semibold text-slate-900">{formatCurrency(selectedCustomerLifetimeSpend)}</p>
+                      <p className="text-xl font-semibold text-slate-900">{formatCurrencyValue(selectedCustomerLifetimeSpend, globalPreferences)}</p>
                     </div>
                     <div className="rounded-lg border border-slate-200 bg-white p-3">
                       <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">Total Orders</p>
@@ -445,7 +443,7 @@ export function CustomersPage(): JSX.Element {
                     <div className="rounded-lg border border-slate-200 bg-white p-3">
                       <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">Average Order</p>
                       <p className="text-xl font-semibold text-slate-900">
-                        {formatCurrency(selectedCustomerAverageOrderValue)}
+                        {formatCurrencyValue(selectedCustomerAverageOrderValue, globalPreferences)}
                       </p>
                     </div>
                     <div className="rounded-lg border border-slate-200 bg-white p-3">
@@ -463,7 +461,7 @@ export function CustomersPage(): JSX.Element {
                     </div>
                     <div className="rounded-lg border border-slate-200 bg-white p-3">
                       <p className="text-[11px] uppercase tracking-[0.08em] text-slate-500">Credit Balance</p>
-                      <p className="text-xl font-semibold text-amber-600">{formatCurrency(selectedCustomer.creditBalance)}</p>
+                      <p className="text-xl font-semibold text-amber-600">{formatCurrencyValue(selectedCustomer.creditBalance, globalPreferences)}</p>
                     </div>
                   </div>
 
@@ -513,7 +511,7 @@ export function CustomersPage(): JSX.Element {
                       <p className="text-xs text-slate-500">{new Date(activityRecord.occurredAt).toLocaleString()}</p>
                     </div>
                     <p className="mt-1 text-xs text-slate-600">
-                      Amount: {formatCurrency(activityRecord.amount)} / Points: {activityRecord.points}
+                      Amount: {formatCurrencyValue(activityRecord.amount, globalPreferences)} / Points: {activityRecord.points}
                     </p>
                     {activityRecord.referenceId && (
                       <p className="text-xs text-slate-500">Reference: {activityRecord.referenceId}</p>
