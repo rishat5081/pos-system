@@ -139,7 +139,7 @@ function buildSparklinePoints(values: number[]): string {
     .join(' ');
 }
 
-export function HomePage(): JSX.Element {
+export function HomePage() {
   const [range, setRange] = useState<'7D' | '30D' | '90D'>('30D');
 
   const chartValues = salesSeries[range];

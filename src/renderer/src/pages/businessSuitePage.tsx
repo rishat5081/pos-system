@@ -143,7 +143,7 @@ function toCommaList(value: string): string[] {
     .filter(Boolean);
 }
 
-export function BusinessSuitePage(): JSX.Element {
+export function BusinessSuitePage() {
   const storeProfile = useStoreOpsStore((state) => state.storeProfile);
   const globalPreferences = useStoreOpsStore((state) => state.globalPreferences);
   const customers = useStoreOpsStore((state) => state.customers);
@@ -418,7 +418,7 @@ export function BusinessSuitePage(): JSX.Element {
     });
   };
 
-  const renderRestaurantSection = (): JSX.Element => (
+  const renderRestaurantSection = () => (
     <div className="grid gap-6 xl:grid-cols-2">
       {hasFeature('restaurantTables') && (
         <Card className="border-white/70 bg-white/90 shadow-lg">
@@ -521,7 +521,7 @@ export function BusinessSuitePage(): JSX.Element {
     </div>
   );
 
-  const renderSalonSection = (): JSX.Element => (
+  const renderSalonSection = () => (
     <div className="grid gap-6 xl:grid-cols-2">
       {hasFeature('salonServices') && (
         <Card className="border-white/70 bg-white/90 shadow-lg">
@@ -619,7 +619,7 @@ export function BusinessSuitePage(): JSX.Element {
     </div>
   );
 
-  const renderFieldServiceSection = (): JSX.Element => (
+  const renderFieldServiceSection = () => (
     <div className="grid gap-6 xl:grid-cols-3">
       {hasFeature('fieldEstimates') && (
         <Card className="border-white/70 bg-white/90 shadow-lg">
@@ -764,7 +764,7 @@ export function BusinessSuitePage(): JSX.Element {
     </div>
   );
 
-  const renderGrocerySection = (): JSX.Element => (
+  const renderGrocerySection = () => (
     <div className="grid gap-6 xl:grid-cols-2">
       {hasFeature('routeSubscriptions') && (
         <Card className="border-white/70 bg-white/90 shadow-lg">

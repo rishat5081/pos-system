@@ -4,7 +4,7 @@ import { ThemeSwitcher } from '@/components/themeSwitcher';
 import { useAuthStore } from '@/stores/authStore';
 import { useStoreOpsStore } from '@/stores/storeOpsStore';
 
-export function Topbar(): JSX.Element {
+export function Topbar() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const globalPreferences = useStoreOpsStore((state) => state.globalPreferences);

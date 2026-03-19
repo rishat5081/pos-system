@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrencyValue } from '@/lib/globalFormat';
 import { useStoreOpsStore } from '@/stores/storeOpsStore';
 
-export function ReportsPage(): JSX.Element {
+export function ReportsPage() {
   const orders = useStoreOpsStore((state) => state.orders);
   const invoices = useStoreOpsStore((state) => state.invoices);
   const globalPreferences = useStoreOpsStore((state) => state.globalPreferences);

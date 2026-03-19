@@ -70,7 +70,7 @@ const guideByRoute: Record<string, GuideContent> = {
   }
 };
 
-export function ScreenGuideBanner(): JSX.Element {
+export function ScreenGuideBanner() {
   const location = useLocation();
 
   const guideContent = useMemo(() => {

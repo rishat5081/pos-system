@@ -259,7 +259,7 @@ const hrModuleActions: Record<HrModule, string[]> = {
   calendar: ['Select a calendar day', 'Schedule meetings and appointments', 'Review orders and pending deliveries']
 };
 
-export function StaffPage(): JSX.Element {
+export function StaffPage() {
   const currentUser = useAuthStore((state) => state.user);
   const staffRecords = useStoreOpsStore((state) => state.staffRecords);
   const tipsPoolBalance = useStoreOpsStore((state) => state.tipsPoolBalance);

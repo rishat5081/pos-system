@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
 import { useStoreOpsStore } from '@/stores/storeOpsStore';
 
-export function Sidebar(): JSX.Element {
+export function Sidebar() {
   const user = useAuthStore((state) => state.user);
   const enabledFeatures = useStoreOpsStore((state) => state.storeProfile.enabledFeatures);
   const navItems = !user

@@ -116,7 +116,7 @@ function resolveColumnMap(headers: string[]): CsvColumnMap {
   };
 }
 
-export function OrderManagementPage(): JSX.Element {
+export function OrderManagementPage() {
   const orders = useStoreOpsStore((state) => state.orders);
   const globalPreferences = useStoreOpsStore((state) => state.globalPreferences);
   const orderCustomFields = useStoreOpsStore((state) => state.orderCustomFields);

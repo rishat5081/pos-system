@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatCurrencyValue } from '@/lib/globalFormat';
 import { useStoreOpsStore } from '@/stores/storeOpsStore';
 
-export function DashboardPage(): JSX.Element {
+export function DashboardPage() {
   const todaySales = useStoreOpsStore((state) => state.todaySales);
   const todayOrders = useStoreOpsStore((state) => state.todayOrders);
   const products = useStoreOpsStore((state) => state.products);

@@ -9,8 +9,8 @@
 [![Code Quality](https://github.com/rishat5081/pos-system/actions/workflows/code-quality.yml/badge.svg)](https://github.com/rishat5081/pos-system/actions/workflows/code-quality.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Electron](https://img.shields.io/badge/Electron-38-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Electron](https://img.shields.io/badge/Electron-41-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 
 A cross-platform desktop POS application built with Electron, React, TypeScript, and Tailwind CSS. Supports retail, restaurant, salon, field service, and grocery industries with a unified platform architecture.
 
@@ -60,15 +60,15 @@ A cross-platform desktop POS application built with Electron, React, TypeScript,
 
 | Layer | Technology |
 |-------|-----------|
-| **Runtime** | Electron 38 |
-| **Frontend** | React 18, TypeScript 5.9 |
+| **Runtime** | Electron 41 |
+| **Frontend** | React 19, TypeScript 5.9 |
 | **Styling** | Tailwind CSS 3, shadcn/ui, Radix UI |
-| **State** | Zustand 5 |
+| **State** | Zustand 5.0 |
 | **Forms** | React Hook Form + Zod validation |
 | **Routing** | React Router 6 |
 | **Database** | Drizzle ORM (SQLite) |
 | **Build** | Vite 7, electron-vite 4 |
-| **Testing** | Vitest, React Testing Library, Playwright |
+| **Testing** | Vitest 4, React Testing Library, Playwright |
 | **Linting** | ESLint 9 with TypeScript plugin |
 
 ## Architecture

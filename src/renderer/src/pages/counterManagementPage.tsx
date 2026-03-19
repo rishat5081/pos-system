@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/stores/authStore';
 import { useStoreOpsStore } from '@/stores/storeOpsStore';
 
-export function CounterManagementPage(): JSX.Element {
+export function CounterManagementPage() {
   const currentUser = useAuthStore((state) => state.user);
   const counterRecords = useStoreOpsStore((state) => state.counterRecords);
   const staffRecords = useStoreOpsStore((state) => state.staffRecords);
@@ -38,21 +38,19 @@ export function CounterManagementPage(): JSX.Element {
     [counterRecords]
   );
 
-  const [selectedCounterId, setSelectedCounterId] = useState<string>(counterRecords[0]?.id ?? '');
-  const [selectedStaffId, setSelectedStaffId] = useState<string>(assignableStaffRecords[0]?.id ?? '');
+  const [selectedCounterIdRaw, setSelectedCounterId] = useState<string>(counterRecords[0]?.id ?? '');
+  const [selectedStaffIdRaw, setSelectedStaffId] = useState<string>(assignableStaffRecords[0]?.id ?? '');
   const [counterTaskInput, setCounterTaskInput] = useState<string>('Checkout lane active');
 
-  useEffect(() => {
-    if (!counterRecords.some((counterRecord) => counterRecord.id === selectedCounterId)) {
-      setSelectedCounterId(counterRecords[0]?.id ?? '');
-    }
-  }, [counterRecords, selectedCounterId]);
+  const selectedCounterId = useMemo(
+    () => counterRecords.some((r) => r.id === selectedCounterIdRaw) ? selectedCounterIdRaw : (counterRecords[0]?.id ?? ''),
+    [counterRecords, selectedCounterIdRaw]
+  );
 
-  useEffect(() => {
-    if (!assignableStaffRecords.some((staffRecord) => staffRecord.id === selectedStaffId)) {
-      setSelectedStaffId(assignableStaffRecords[0]?.id ?? '');
-    }
-  }, [assignableStaffRecords, selectedStaffId]);
+  const selectedStaffId = useMemo(
+    () => assignableStaffRecords.some((r) => r.id === selectedStaffIdRaw) ? selectedStaffIdRaw : (assignableStaffRecords[0]?.id ?? ''),
+    [assignableStaffRecords, selectedStaffIdRaw]
+  );
 
   const handleAssignCounter = (): void => {
     if (!selectedCounterId || !selectedStaffId) {

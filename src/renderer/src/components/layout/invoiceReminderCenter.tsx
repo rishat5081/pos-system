@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BellRing } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatCurrencyValue, formatDateValue } from '@/lib/globalFormat';
-import { type InvoiceRecord, useStoreOpsStore } from '@/stores/storeOpsStore';
+import { useStoreOpsStore } from '@/stores/storeOpsStore';
 
 function playReminderTone(): void {
   if (typeof window === 'undefined') {
@@ -28,18 +28,16 @@ function playReminderTone(): void {
   }
 }
 
-export function InvoiceReminderCenter(): JSX.Element {
+export function InvoiceReminderCenter() {
   const globalPreferences = useStoreOpsStore((state) => state.globalPreferences);
   const invoices = useStoreOpsStore((state) => state.invoices);
   const getPendingInvoiceReminders = useStoreOpsStore((state) => state.getPendingInvoiceReminders);
   const markInvoiceReminderNotified = useStoreOpsStore((state) => state.markInvoiceReminderNotified);
   const setInvoiceStatus = useStoreOpsStore((state) => state.setInvoiceStatus);
   const lastReminderSignatureRef = useRef<string>('');
-  const [pendingReminders, setPendingReminders] = useState<InvoiceRecord[]>([]);
-
-  useEffect(() => {
-    setPendingReminders(getPendingInvoiceReminders());
-  }, [invoices, getPendingInvoiceReminders]);
+  const [tick, setTick] = useState(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- invoices and tick are intentional triggers for time-based rechecks
+  const pendingReminders = useMemo(() => getPendingInvoiceReminders(), [invoices, getPendingInvoiceReminders, tick]);
 
   useEffect(() => {
     const reminderSignature = pendingReminders.map((invoiceRecord) => invoiceRecord.id).join('|');
@@ -53,13 +51,13 @@ export function InvoiceReminderCenter(): JSX.Element {
 
   useEffect(() => {
     const reminderTimer = setInterval(() => {
-      setPendingReminders(getPendingInvoiceReminders());
+      setTick((prev) => prev + 1);
     }, 30_000);
 
     return () => {
       clearInterval(reminderTimer);
     };
-  }, [getPendingInvoiceReminders]);
+  }, []);
 
   if (!pendingReminders.length) {
     return <></>;

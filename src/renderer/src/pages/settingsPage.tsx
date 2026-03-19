@@ -16,7 +16,7 @@ import {
   useStoreOpsStore
 } from '@/stores/storeOpsStore';
 
-export function SettingsPage(): JSX.Element {
+export function SettingsPage() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const syncStatus = useStoreOpsStore((state) => state.syncStatus);

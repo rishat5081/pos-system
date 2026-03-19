@@ -14,7 +14,7 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-export function LoginPage(): JSX.Element {
+export function LoginPage() {
   const login = useAuthStore((state) => state.login);
   const loading = useAuthStore((state) => state.loading);
   const user = useAuthStore((state) => state.user);

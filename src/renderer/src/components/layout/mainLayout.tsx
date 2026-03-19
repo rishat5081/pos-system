@@ -4,7 +4,7 @@ import { ScreenGuideBanner } from '@/components/layout/screenGuideBanner';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Topbar } from '@/components/layout/topbar';
 
-export function MainLayout(): JSX.Element {
+export function MainLayout() {
   return (
     <div className="flex h-screen min-w-[1024px] bg-transparent">
       <Sidebar />

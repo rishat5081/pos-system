@@ -20,7 +20,7 @@ const userAccountRoles: UserAccountRole[] = ['super_admin', 'manager', 'cashier'
 const userAccountStatuses: UserAccountStatus[] = ['active', 'locked', 'disabled'];
 const temporaryPassword = 'ChangeMe123!';
 
-export function UserManagementPage(): JSX.Element {
+export function UserManagementPage() {
   const currentUser = useAuthStore((state) => state.user);
   const setCurrentUser = useAuthStore((state) => state.setUser);
   const changedByName = currentUser?.fullName ?? 'superAdmin';

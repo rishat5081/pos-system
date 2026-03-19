@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { formatCurrencyValue } from '@/lib/globalFormat';
 import { type PaymentMethod, useStoreOpsStore } from '@/stores/storeOpsStore';
 
-export function PosPage(): JSX.Element {
+export function PosPage() {
   const products = useStoreOpsStore((state) => state.products);
   const customers = useStoreOpsStore((state) => state.customers);
   const taxRate = useStoreOpsStore((state) => state.taxRate);

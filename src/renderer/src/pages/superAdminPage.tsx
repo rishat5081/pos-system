@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,7 @@ function toHourLabel(value: number): string {
   return new Date(value).toLocaleTimeString([], { hour: 'numeric' });
 }
 
-export function SuperAdminPage(): JSX.Element {
+export function SuperAdminPage() {
   const currentUser = useAuthStore((state) => state.user);
   const storeProfile = useStoreOpsStore((state) => state.storeProfile);
   const todaySales = useStoreOpsStore((state) => state.todaySales);
@@ -133,21 +133,19 @@ export function SuperAdminPage(): JSX.Element {
     });
   }, [activeStaffRecords, counterRecords]);
 
-  const [selectedCounterId, setSelectedCounterId] = useState<string>(counterRecords[0]?.id ?? '');
-  const [selectedStaffId, setSelectedStaffId] = useState<string>(clockedInStaffRecords[0]?.id ?? '');
+  const [selectedCounterIdRaw, setSelectedCounterId] = useState<string>(counterRecords[0]?.id ?? '');
+  const [selectedStaffIdRaw, setSelectedStaffId] = useState<string>(clockedInStaffRecords[0]?.id ?? '');
   const [counterTaskInput, setCounterTaskInput] = useState<string>('Checkout lane active');
 
-  useEffect(() => {
-    if (!counterRecords.some((counterRecord) => counterRecord.id === selectedCounterId)) {
-      setSelectedCounterId(counterRecords[0]?.id ?? '');
-    }
-  }, [counterRecords, selectedCounterId]);
+  const selectedCounterId = useMemo(
+    () => counterRecords.some((r) => r.id === selectedCounterIdRaw) ? selectedCounterIdRaw : (counterRecords[0]?.id ?? ''),
+    [counterRecords, selectedCounterIdRaw]
+  );
 
-  useEffect(() => {
-    if (!clockedInStaffRecords.some((staffRecord) => staffRecord.id === selectedStaffId)) {
-      setSelectedStaffId(clockedInStaffRecords[0]?.id ?? '');
-    }
-  }, [clockedInStaffRecords, selectedStaffId]);
+  const selectedStaffId = useMemo(
+    () => clockedInStaffRecords.some((r) => r.id === selectedStaffIdRaw) ? selectedStaffIdRaw : (clockedInStaffRecords[0]?.id ?? ''),
+    [clockedInStaffRecords, selectedStaffIdRaw]
+  );
 
   const handleAssignCounter = (): void => {
     if (!selectedCounterId || !selectedStaffId) {

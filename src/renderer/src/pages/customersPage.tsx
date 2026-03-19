@@ -41,7 +41,7 @@ function getLoyaltyTier(points: number): string {
   return 'Standard';
 }
 
-export function CustomersPage(): JSX.Element {
+export function CustomersPage() {
   const customers = useStoreOpsStore((state) => state.customers);
   const orders = useStoreOpsStore((state) => state.orders);
   const customerActivityRecords = useStoreOpsStore((state) => state.customerActivityRecords);

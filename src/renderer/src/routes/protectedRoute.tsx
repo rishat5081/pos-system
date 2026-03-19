@@ -3,7 +3,7 @@ import { canAccessRoute, getFirstAccessibleRoute } from '@/lib/accessControl';
 import { useAuthStore } from '@/stores/authStore';
 import { useStoreOpsStore } from '@/stores/storeOpsStore';
 
-export function ProtectedRoute(): JSX.Element {
+export function ProtectedRoute() {
   const user = useAuthStore((state) => state.user);
   const loading = useAuthStore((state) => state.loading);
   const enabledFeatures = useStoreOpsStore((state) => state.storeProfile.enabledFeatures);

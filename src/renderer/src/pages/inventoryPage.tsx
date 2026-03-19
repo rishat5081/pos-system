@@ -28,7 +28,7 @@ const initialProductFormState: ProductFormState = {
   reorderLevel: '0'
 };
 
-export function InventoryPage(): JSX.Element {
+export function InventoryPage() {
   const categories = useStoreOpsStore((state) => state.categories);
   const products = useStoreOpsStore((state) => state.products);
   const addCategory = useStoreOpsStore((state) => state.addCategory);

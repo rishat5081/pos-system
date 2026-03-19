@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { useStoreOpsStore } from '@/stores/storeOpsStore';
 
-export function SetupWizardPage(): JSX.Element {
+export function SetupWizardPage() {
   const navigate = useNavigate();
   const storeProfile = useStoreOpsStore((state) => state.storeProfile);
   const setDeploymentProfile = useStoreOpsStore((state) => state.setDeploymentProfile);

@@ -21,7 +21,7 @@ import { ProtectedRoute } from '@/routes/protectedRoute';
 import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
 
-function NotFoundPage(): JSX.Element {
+function NotFoundPage() {
   return (
     <div className="p-10 text-center">
       <h1 className="text-3xl font-semibold">404</h1>
@@ -30,7 +30,7 @@ function NotFoundPage(): JSX.Element {
   );
 }
 
-export default function App(): JSX.Element {
+export default function App() {
   const hydrateSession = useAuthStore((state) => state.hydrateSession);
   const hydrateTheme = useThemeStore((state) => state.hydrateTheme);
   useStoreSync();
