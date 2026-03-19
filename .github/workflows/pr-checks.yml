@@ -1,0 +1,47 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  conventional-title:
+    name: Conventional PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          requireScope: false
+
+  branch-naming:
+    name: Branch Naming
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH="${{ github.head_ref }}"
+          PATTERN="^(feat|fix|docs|chore|refactor|test|ci|perf|build|revert)/.+$"
+          if [[ "$BRANCH" =~ $PATTERN ]] || [[ "$BRANCH" == "main" ]] || [[ "$BRANCH" == "develop" ]]; then
+            echo "Branch name '$BRANCH' is valid"
+          else
+            echo "::error::Branch name '$BRANCH' does not match pattern: $PATTERN"
+            echo "Expected format: type/description (e.g., feat/add-login, fix/cart-total)"
+            exit 1
+          fi

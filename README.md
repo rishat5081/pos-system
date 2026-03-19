@@ -1,143 +1,200 @@
+<div align="center">
+
 # POS System
 
-Electron desktop POS built with React, Vite, TypeScript, Tailwind, and shadcn/ui.
+**Enterprise-grade Point of Sale & Business Management Platform**
 
-## Run
+[![CI](https://github.com/rishat5081/pos-system/actions/workflows/ci.yml/badge.svg)](https://github.com/rishat5081/pos-system/actions/workflows/ci.yml)
+[![E2E Tests](https://github.com/rishat5081/pos-system/actions/workflows/e2e.yml/badge.svg)](https://github.com/rishat5081/pos-system/actions/workflows/e2e.yml)
+[![Code Quality](https://github.com/rishat5081/pos-system/actions/workflows/code-quality.yml/badge.svg)](https://github.com/rishat5081/pos-system/actions/workflows/code-quality.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Electron](https://img.shields.io/badge/Electron-38-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+
+A cross-platform desktop POS application built with Electron, React, TypeScript, and Tailwind CSS. Supports retail, restaurant, salon, field service, and grocery industries with a unified platform architecture.
+
+[Getting Started](#getting-started) · [Features](#features) · [Architecture](#architecture) · [Contributing](CONTRIBUTING.md)
+
+</div>
+
+---
+
+## Features
+
+### Core Commerce
+- **POS Checkout** — Cart management, stock deduction, payment processing, register open/close
+- **Order Management** — Status tracking, CSV import with header analysis, custom fields, invoicing, due reminders, delivery tracking
+- **Inventory** — Categories, stock adjustments, reorder alerts, product CRUD
+- **Customers** — Loyalty programs, credit actions, activity history
+- **Dashboard** — KPI summaries, visual analytics
+- **Reports** — Operational and financial summaries
+- **Counter Management** — Assignment and active work state tracking
+
+### HR & Workforce
+- Employee directory, attendance, payroll, and loan tracking
+- Department transfers with export history
+- Meetings, appointments, shift planning, and calendar views
+
+### Cross-Industry Modules
+| Industry | Capabilities |
+|----------|-------------|
+| **Retail** | Standard POS, inventory, customers |
+| **Restaurant** | Table management, kitchen tickets |
+| **Salon** | Services, bookings, deposits, no-show handling |
+| **Field Service** | Job dispatch, estimates, invoice conversion |
+| **Grocery & Dairy** | Subscriptions, route manifests |
+
+### Data Exchange
+- **Export** formats: CSV, TSV, JSON, TXT, PDF, XLSX
+- **Import** formats: CSV, TSV, JSON, TXT with header analysis
+- Full snapshot backup/restore via JSON with PDF summary
+
+### Platform Controls
+- Role-based access: `super_admin`, `manager`, `cashier`
+- Per-user feature overrides with job-function presets
+- Light/dark theme, i18n (locale, currency, timezone, date format)
+- Offline-first with sync controls
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Runtime** | Electron 38 |
+| **Frontend** | React 18, TypeScript 5.9 |
+| **Styling** | Tailwind CSS 3, shadcn/ui, Radix UI |
+| **State** | Zustand 5 |
+| **Forms** | React Hook Form + Zod validation |
+| **Routing** | React Router 6 |
+| **Database** | Drizzle ORM (SQLite) |
+| **Build** | Vite 7, electron-vite 4 |
+| **Testing** | Vitest, React Testing Library, Playwright |
+| **Linting** | ESLint 9 with TypeScript plugin |
+
+## Architecture
+
+```
+src/
+├── main/                  # Electron main process
+│   ├── index.ts           # App entry, window management
+│   └── services/          # IPC handlers, database, auth
+├── preload/               # Context bridge
+└── renderer/              # React application
+    └── src/
+        ├── components/    # Reusable UI components (shadcn/ui)
+        ├── pages/         # Route-level page components
+        ├── stores/        # Zustand state management
+        ├── flows/         # Business logic & integration tests
+        ├── lib/           # Utilities and helpers
+        └── types/         # TypeScript type definitions
+```
+
+## Getting Started
+
+### Prerequisites
+
+- **Node.js** >= 20
+- **pnpm** >= 10
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/rishat5081/pos-system.git
+cd pos-system
+
+# Install dependencies
 pnpm install
+
+# Start development server
 pnpm dev
 ```
 
-## Demo credentials
+### Demo Credentials
 
-- Username: `admin`
-- Password: `admin123`
+| Role | Username | Password |
+|------|----------|----------|
+| Super Admin | `admin` | `admin123` |
 
-## First-run deployment flow
+### First-Run Setup
 
-After login, the app sends an unconfigured store to the setup wizard. The wizard captures:
+After login, the setup wizard guides you through:
+1. **Deployment template** — Retail, Restaurant, Salon, Field Service, Grocery + Dairy, or All In One
+2. **Store identity** — Business name and details
+3. **Industries** — Enable relevant industry modules
+4. **Modules** — Configure active features
 
-- deployment template
-- store identity
-- enabled industries
-- enabled modules
+The wizard can be re-opened from Settings by a `super_admin` without losing operational data.
 
-Available deployment templates:
+## Scripts
 
-- `Retail`
-- `Restaurant`
-- `Salon`
-- `Field Service`
-- `Grocery + Dairy`
-- `All In One`
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start development server with hot reload |
+| `pnpm build` | Production build (main + renderer + preload) |
+| `pnpm preview` | Preview production build |
+| `pnpm typecheck` | TypeScript type checking |
+| `pnpm lint` | ESLint check |
+| `pnpm test` | Run unit/integration tests (Vitest) |
+| `pnpm test:e2e` | Run E2E tests (Playwright) |
+| `pnpm test:watch` | Watch mode for tests |
+| `pnpm db:migrate` | Run database migrations |
+| `pnpm db:migrate:create` | Generate new migration |
+| `pnpm db:seed` | Seed database with sample data |
 
-The setup wizard can be intentionally reopened from Settings by a `super_admin`. Re-running setup preserves operational data and only reopens deployment configuration.
+## Access Control
 
-## Access model
+### Role Hierarchy
 
-The app now uses a single permission matrix for navigation and route access.
+```
+super_admin
+├── Full platform access
+├── Super Admin Console
+├── User Management
+└── Setup Wizard rerun
 
-Role scope:
+manager
+├── Business Suite
+├── HR modules
+├── Inventory, Counters
+├── Reports, Settings
+└── Vertical operating modules
 
-- `super_admin`: full platform access, including super admin console, user management, deployment changes, and setup rerun
-- `manager`: operational management access, including business suite, HR, inventory, counters, reports, and settings
-- `cashier`: sales-facing access, including dashboard, POS, orders, and customers
-
-Per-user overrides:
-
-- feature access can be explicitly `allowed` or `revoked` per account
-- overrides are applied on top of the role default
-- overrides are persisted through the main-process auth layer and included in the live session
-- job-function presets can apply curated override bundles faster for cashier, customer desk, inventory, HR, restaurant, and operations roles
-
-Protected areas:
-
-- `Super Admin Console` is `super_admin` only
-- `User Management` is `super_admin` only
-- `Settings` is `manager` or `super_admin`
-- vertical operating modules inside Business Suite are restricted to `manager` or `super_admin`
-
-If a role tries to open a route that is not allowed for that deployment or role, the app redirects to the first valid module for that user.
-
-## Implemented modules
-
-Core commerce:
-
-- authentication, protected routing, and session hydration
-- dashboard KPIs and visual summaries
-- POS checkout, cart updates, stock deduction, register open/close, and payments
-- orders with status management, CSV import analysis flow, runtime custom fields, invoice creation, due reminders, and delivery tracking
-- inventory with categories, stock adjustment, reorder visibility, and product management
-- customers with loyalty, credit actions, and activity history
-- counter management for assignments and active work state
-- reports for operations and finance summaries
-- settings for deployment, permissions, localization, and sync
-
-HR and workforce:
-
-- employee directory
-- attendance and clock tracking
-- payroll generation
-- loan tracking
-- department transfer history and export
-- meetings, appointments, shift planning, and calendar day summaries
-
-Data exchange:
-
-- orders export in `csv`, `tsv`, `json`, `txt`, `pdf`, and `xlsx`
-- invoices export in `csv`, `tsv`, `json`, `txt`, `pdf`, and `xlsx`
-- order import from `csv`, `tsv`, `json`, and `txt` with header analysis and retained custom fields
-- inventory import/export for products and categories
-- customer import/export for directories, activity, single-customer history, and customer orders
-- HR import/export for employee directory, meetings, appointments, shifts, leave, payroll, department history, and selected calendar day summary
-- user management import/export for account directories and audit logs
-- settings-level full snapshot JSON backup export/import plus PDF summary export
-
-Cross-industry suite:
-
-- restaurant tables and kitchen tickets
-- salon services, bookings, deposits, and no-show handling
-- field jobs, dispatch, estimates, and invoice conversion
-- grocery and dairy subscriptions plus route manifests
-
-Platform controls:
-
-- super admin live operations screen
-- user account management with role/status updates, per-user feature overrides, job-function presets, temporary password reset, and audit trail
-- light and dark theme switching
-- international locale, currency, timezone, and date formatting
-- offline sync controls and manual sync
-
-## Quality checks
-
-```bash
-pnpm typecheck
-pnpm lint
-pnpm test
-pnpm test:e2e
-pnpm build
+cashier
+├── Dashboard
+├── POS
+├── Orders
+└── Customers
 ```
 
-Notes:
+### Per-User Overrides
 
-- `pnpm exec eslint . --ext .ts,.tsx` is the reliable direct lint command
-- `pnpm lint` can occasionally race with Electron Vite temp config files if it is run alongside build processes
+Features can be explicitly `allowed` or `revoked` per account, applied on top of role defaults. Job-function presets provide curated override bundles for common roles.
 
-## Validation status
+## CI/CD
 
-Current validation target:
+This project uses GitHub Actions for continuous integration:
 
-- unit and integration coverage with Vitest
-- UI browser flows with Playwright
-- production renderer/electron build
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| **CI** | Push/PR to main | Typecheck, lint, test (Node 20+22), build |
+| **E2E** | PR to main | Playwright browser tests |
+| **Code Quality** | PR + weekly | Security audit, license check, bundle size |
+| **Release** | `v*` tags | Cross-platform build + GitHub Release |
+| **Dependency Review** | PR to main | Vulnerability scanning |
+| **Stale** | Daily cron | Auto-close inactive issues/PRs |
+| **PR Checks** | PR events | Conventional commit titles, branch naming |
 
-Validated commands:
+## Contributing
 
-```bash
-pnpm typecheck
-pnpm test
-pnpm test:e2e
-pnpm build
-pnpm exec eslint . --ext .ts,.tsx
-```
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards, and pull request guidelines.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+  Built with Electron, React, and TypeScript
+</div>
