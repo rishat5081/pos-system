@@ -185,6 +185,21 @@ This project uses GitHub Actions for continuous integration:
 | **Stale** | Daily cron | Auto-close inactive issues/PRs |
 | **PR Checks** | PR events | Conventional commit titles, branch naming |
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [AGENTS.md](AGENTS.md) | AI agent context (Claude Code, Codex, Cursor) |
+| [CLAUDE.md](CLAUDE.md) | Claude Code project instructions |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Development setup, coding standards, PR guidelines |
+| [docs/HANDBOOK.md](docs/HANDBOOK.md) | Developer handbook (full reference) |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture, data flow, security model |
+| [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | IPC channels, store actions, utility functions |
+| [docs/DATA_MODEL.md](docs/DATA_MODEL.md) | Complete type reference (50+ interfaces) |
+| [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | Functional & non-functional requirements |
+| [docs/TESTING.md](docs/TESTING.md) | Test strategy, writing tests, CI |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Build, release, CI/CD pipeline |
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards, and pull request guidelines.
