@@ -88,8 +88,8 @@ importers:
         specifier: ^0.31.10
         version: 0.31.10
       electron:
-        specifier: ^38.1.0
-        version: 38.8.4
+        specifier: ^41.0.3
+        version: 41.0.3
       electron-vite:
         specifier: ^4.0.0
         version: 4.0.1(vite@7.3.1(@types/node@24.10.15)(jiti@1.21.7)(tsx@4.21.0))
@@ -1087,9 +1087,6 @@ packages:
   '@types/keyv@3.1.4':
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
 
-  '@types/node@22.19.13':
-    resolution: {integrity: sha512-akNQMv0wW5uyRpD2v2IEyRSZiR+BeGuoB6L310EgGObO44HSMNT8z1xzio28V8qOrgYaopIDNA18YgdXd+qTiw==}
-
   '@types/node@24.10.15':
     resolution: {integrity: sha512-BgjLoRuSr0MTI5wA6gMw9Xy0sFudAaUuvrnjgGx9wZ522fYYLA5SYJ+1Y30vTcJEG+DRCyDHx/gzQVfofYzSdg==}
 
@@ -1558,8 +1555,8 @@ packages:
       '@swc/core':
         optional: true
 
-  electron@38.8.4:
-    resolution: {integrity: sha512-vYZ2SH2OhzkCmkbRaijtZLIEJRMnLUL2KQmcAM/7kamf4++3AKSNCBjE1epmQnYFY1M4oKjOUcS3G02ayxR5Bw==}
+  electron@41.0.3:
+    resolution: {integrity: sha512-IDjx8liW1q+r7+MOip5W1Eo1eMwJzVObmYrd9yz2dPCkS7XlgLq3qPVMR80TpiROFp73iY30kTzMdpA6fEVs3A==}
     engines: {node: '>= 12.20.55'}
     hasBin: true
 
@@ -2167,8 +2164,8 @@ packages:
     resolution: {integrity: sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==}
     engines: {node: '>=0.4.0'}
 
-  pump@3.0.3:
-    resolution: {integrity: sha512-todwxLMY7/heScKmntwQG8CXVkWUOdYxIvY2s0VWAAMh/nd8SoYiRaKjlr7+iCs984f2P8zvrfWcDDYVb73NfA==}
+  pump@3.0.4:
+    resolution: {integrity: sha512-VS7sjc6KR7e1ukRFhQSY5LM2uBWAUPiOPa/A3mkKmiMwSmRFUITt0xuj+/lesgnCv+dPIEYlkzrcyXgquIHMcA==}
 
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
@@ -2429,9 +2426,6 @@ packages:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
     hasBin: true
-
-  undici-types@6.21.0:
-    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
@@ -3314,10 +3308,6 @@ snapshots:
     dependencies:
       '@types/node': 24.10.15
 
-  '@types/node@22.19.13':
-    dependencies:
-      undici-types: 6.21.0
-
   '@types/node@24.10.15':
     dependencies:
       undici-types: 7.16.0
@@ -3731,10 +3721,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron@38.8.4:
+  electron@41.0.3:
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 22.19.13
+      '@types/node': 24.10.15
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -4005,7 +3995,7 @@ snapshots:
 
   get-stream@5.2.0:
     dependencies:
-      pump: 3.0.3
+      pump: 3.0.4
 
   get-tsconfig@4.13.6:
     dependencies:
@@ -4385,7 +4375,7 @@ snapshots:
 
   progress@2.0.3: {}
 
-  pump@3.0.3:
+  pump@3.0.4:
     dependencies:
       end-of-stream: 1.4.5
       once: 1.4.0
@@ -4677,8 +4667,6 @@ snapshots:
       - supports-color
 
   typescript@5.9.3: {}
-
-  undici-types@6.21.0: {}
 
   undici-types@7.16.0: {}
 
