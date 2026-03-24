@@ -89,7 +89,9 @@ test.describe('POS UI end-to-end flows', () => {
     await page.getByRole('button', { name: 'Open Register' }).click();
     await page.getByRole('button', { name: 'Add To Cart' }).first().click();
     await page.getByRole('button', { name: 'Checkout' }).click();
+    await page.getByRole('button', { name: 'Confirm Payment' }).click();
     await expect(page.getByText(/Payment successful/)).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Print Bill' })).toBeVisible();
 
     await page.getByRole('link', { name: 'Customers' }).click();
     await page.getByPlaceholder('Full name').fill('Weekly Customer');

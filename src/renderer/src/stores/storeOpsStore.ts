@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import type { BranchSnapshotRecord, OrgHierarchyData } from './orgHierarchyTypes';
+import { useOrgHierarchyStore } from './orgHierarchyStore';
 
 export interface CategoryRecord {
   id: string;
@@ -28,7 +30,14 @@ export interface CustomerActivityRecord {
   id: string;
   customerId: string;
   customerName: string;
-  activityType: 'customerCreated' | 'purchaseCompleted' | 'creditAdded' | 'pointsRedeemed';
+  activityType:
+    | 'customerCreated'
+    | 'purchaseCompleted'
+    | 'creditAdded'
+    | 'pointsRedeemed'
+    | 'refundIssued'
+    | 'storeCreditIssued'
+    | 'exchangeCompleted';
   summary: string;
   amount: number;
   points: number;
@@ -184,7 +193,8 @@ export type DeploymentFeatureKey =
   | 'fieldDispatch'
   | 'fieldEstimates'
   | 'routeSubscriptions'
-  | 'routeManifests';
+  | 'routeManifests'
+  | 'companyAnalytics';
 
 export interface CounterRecord {
   id: string;
@@ -249,6 +259,41 @@ export interface GlobalPreferencesRecord {
   dateStyle: 'short' | 'medium' | 'long';
 }
 
+export interface VendorRecord {
+  id: string;
+  name: string;
+  contactName: string;
+  phone: string;
+  email: string;
+  leadTimeDays: number;
+  paymentTerms: string;
+  notes: string;
+  isActive: boolean;
+}
+
+export type PurchaseOrderStatus = 'draft' | 'sent' | 'partiallyReceived' | 'received' | 'cancelled';
+
+export interface PurchaseOrderLineItemRecord {
+  productId: string;
+  productName: string;
+  quantityOrdered: number;
+  quantityReceived: number;
+  unitCost: number;
+}
+
+export interface PurchaseOrderRecord {
+  id: string;
+  vendorId: string;
+  vendorName: string;
+  createdAt: string;
+  updatedAt: string;
+  expectedDate: string;
+  status: PurchaseOrderStatus;
+  note: string;
+  totalCost: number;
+  lineItems: PurchaseOrderLineItemRecord[];
+}
+
 export type OrderCustomFieldType = 'text' | 'number' | 'date';
 
 export interface OrderCustomFieldRecord {
@@ -303,6 +348,22 @@ export interface KitchenTicketRecord {
   status: KitchenTicketStatus;
   assigneeStaffId: string | null;
   assigneeStaffName: string;
+  createdAt: string;
+}
+
+export type RestaurantReservationStatus = 'waitlist' | 'reserved' | 'seated' | 'completed' | 'cancelled';
+
+export interface RestaurantReservationRecord {
+  id: string;
+  guestName: string;
+  contactPhone: string;
+  partySize: number;
+  date: string;
+  time: string;
+  status: RestaurantReservationStatus;
+  tableId: string | null;
+  tableName: string;
+  notes: string;
   createdAt: string;
 }
 
@@ -413,17 +474,21 @@ export interface StoreOpsSnapshot {
   todayOrders: number;
   categories: CategoryRecord[];
   products: ProductRecord[];
+  vendors?: VendorRecord[];
+  purchaseOrders?: PurchaseOrderRecord[];
   customers: CustomerRecord[];
   customerActivityRecords?: CustomerActivityRecord[];
   staffRecords: StaffRecord[];
   meetings: MeetingRecord[];
   appointments?: AppointmentRecord[];
   orders: OrderRecord[];
+  returns?: ReturnRecord[];
   orderCustomFields?: OrderCustomFieldRecord[];
   registerSession: RegisterSessionRecord;
   invoices?: InvoiceRecord[];
   restaurantTables?: RestaurantTableRecord[];
   kitchenTickets?: KitchenTicketRecord[];
+  restaurantReservations?: RestaurantReservationRecord[];
   salonServices?: SalonServiceRecord[];
   salonBookings?: SalonBookingRecord[];
   priceBookItems?: PriceBookItemRecord[];
@@ -441,6 +506,7 @@ export interface StoreOpsSnapshot {
   userAccountAuditRecords: UserAccountAuditRecord[];
   deploymentAuditRecords?: DeploymentAuditRecord[];
   tipsPoolBalance: number;
+  orgHierarchy?: OrgHierarchyData;
 }
 
 export type PaymentMethod = 'cash' | 'card' | 'digital';
@@ -472,6 +538,29 @@ export interface OrderRecord {
   customFieldValues: Record<string, string>;
   deliveryStatus: DeliveryStatus;
   deliveryDate: string | null;
+}
+
+export type ReturnResolution = 'refund' | 'storeCredit' | 'exchange';
+
+export interface ReturnLineItemRecord {
+  productId: string;
+  productName: string;
+  quantity: number;
+  amount: number;
+}
+
+export interface ReturnRecord {
+  id: string;
+  orderId: string;
+  customerId: string | null;
+  customerName: string;
+  reason: string;
+  resolution: ReturnResolution;
+  restocked: boolean;
+  amount: number;
+  createdAt: string;
+  replacementOrderId: string | null;
+  lineItems: ReturnLineItemRecord[];
 }
 
 export interface CalendarDaySummaryRecord {
@@ -529,6 +618,37 @@ interface ImportProductInput {
   price?: number;
   stock?: number;
   reorderLevel?: number;
+}
+
+interface AddVendorInput {
+  name: string;
+  contactName?: string;
+  phone?: string;
+  email?: string;
+  leadTimeDays?: number;
+  paymentTerms?: string;
+  notes?: string;
+}
+
+interface ImportVendorInput {
+  name: string;
+  contactName?: string;
+  phone?: string;
+  email?: string;
+  leadTimeDays?: number;
+  paymentTerms?: string;
+  notes?: string;
+}
+
+interface CreatePurchaseOrderInput {
+  vendorId: string;
+  expectedDate: string;
+  note?: string;
+  lineItems: Array<{
+    productId: string;
+    quantityOrdered: number;
+    unitCost: number;
+  }>;
 }
 
 interface ImportCustomerInput {
@@ -685,6 +805,21 @@ interface CreateInvoiceInput {
   notes?: string;
 }
 
+interface CreateOrderReturnInput {
+  orderId: string;
+  reason: string;
+  resolution: ReturnResolution;
+  restocked: boolean;
+  lineItems: Array<{
+    productId: string;
+    quantity: number;
+  }>;
+  exchangeItems?: Array<{
+    productId: string;
+    quantity: number;
+  }>;
+}
+
 interface SetDeploymentProfileInput {
   businessType: string;
   primaryIndustry: DeploymentIndustry;
@@ -708,6 +843,16 @@ interface AddKitchenTicketInput {
   course: string;
   modifiers?: string[];
   assigneeStaffId?: string | null;
+}
+
+interface AddRestaurantReservationInput {
+  guestName: string;
+  contactPhone?: string;
+  partySize: number;
+  date: string;
+  time: string;
+  tableId?: string | null;
+  notes?: string;
 }
 
 interface AddSalonServiceInput {
@@ -782,17 +927,21 @@ interface StoreOpsState {
   todayOrders: number;
   categories: CategoryRecord[];
   products: ProductRecord[];
+  vendors: VendorRecord[];
+  purchaseOrders: PurchaseOrderRecord[];
   customers: CustomerRecord[];
   customerActivityRecords: CustomerActivityRecord[];
   staffRecords: StaffRecord[];
   meetings: MeetingRecord[];
   appointments: AppointmentRecord[];
   orders: OrderRecord[];
+  returns: ReturnRecord[];
   orderCustomFields: OrderCustomFieldRecord[];
   registerSession: RegisterSessionRecord;
   invoices: InvoiceRecord[];
   restaurantTables: RestaurantTableRecord[];
   kitchenTickets: KitchenTicketRecord[];
+  restaurantReservations: RestaurantReservationRecord[];
   salonServices: SalonServiceRecord[];
   salonBookings: SalonBookingRecord[];
   priceBookItems: PriceBookItemRecord[];
@@ -819,6 +968,11 @@ interface StoreOpsState {
   addCategory: (input: AddCategoryInput) => void;
   addProduct: (input: AddProductInput) => void;
   importProducts: (inputs: ImportProductInput[]) => void;
+  addVendor: (input: AddVendorInput) => void;
+  importVendors: (inputs: ImportVendorInput[]) => void;
+  createPurchaseOrder: (input: CreatePurchaseOrderInput) => void;
+  setPurchaseOrderStatus: (purchaseOrderId: string, status: PurchaseOrderStatus) => void;
+  receivePurchaseOrderItems: (purchaseOrderId: string, receivedItems: Array<{ productId: string; quantity: number }>) => void;
   addCustomer: (input: AddCustomerInput) => void;
   importCustomers: (inputs: ImportCustomerInput[]) => void;
   addStaffMember: (input: AddStaffInput) => void;
@@ -842,6 +996,7 @@ interface StoreOpsState {
   addOrderCustomField: (input: AddOrderCustomFieldInput) => void;
   importOrders: (inputs: ImportOrderInput[]) => void;
   processCheckout: (input: CheckoutInput) => { ok: true; orderTotal: number; orderId: string };
+  createOrderReturn: (input: CreateOrderReturnInput) => { ok: true; returnId: string; replacementOrderId: string | null };
   adjustStock: (productId: string, change: number) => void;
   startRegisterSession: (openingCash: number) => void;
   endRegisterSession: () => void;
@@ -880,6 +1035,8 @@ interface StoreOpsState {
   setRestaurantTableStatus: (tableId: string, status: RestaurantTableStatus) => void;
   addKitchenTicket: (input: AddKitchenTicketInput) => void;
   setKitchenTicketStatus: (ticketId: string, status: KitchenTicketStatus) => void;
+  addRestaurantReservation: (input: AddRestaurantReservationInput) => void;
+  setRestaurantReservationStatus: (reservationId: string, status: RestaurantReservationStatus) => void;
   addSalonService: (input: AddSalonServiceInput) => void;
   addSalonBooking: (input: AddSalonBookingInput) => void;
   setSalonBookingStatus: (bookingId: string, status: SalonBookingStatus) => void;
@@ -908,6 +1065,54 @@ const initialProducts: ProductRecord[] = [
   { id: 'product-milk', name: 'Whole Milk 1L', category: 'Dairy', price: 2.8, stock: 41, reorderLevel: 18 },
   { id: 'product-rice', name: 'Rice 5kg', category: 'Grocery', price: 12.5, stock: 30, reorderLevel: 12 },
   { id: 'product-chips', name: 'Potato Chips', category: 'Snacks', price: 1.75, stock: 16, reorderLevel: 22 }
+];
+
+const initialVendors: VendorRecord[] = [
+  {
+    id: 'vendor-north-foods',
+    name: 'North Foods',
+    contactName: 'Alina West',
+    phone: '+1 555 300 1122',
+    email: 'orders@northfoods.example',
+    leadTimeDays: 3,
+    paymentTerms: 'Net 15',
+    notes: 'Primary chilled goods supplier',
+    isActive: true
+  },
+  {
+    id: 'vendor-fresh-harvest',
+    name: 'Fresh Harvest',
+    contactName: 'Ruben Clark',
+    phone: '+1 555 400 5566',
+    email: 'supply@freshharvest.example',
+    leadTimeDays: 2,
+    paymentTerms: 'Net 7',
+    notes: 'Produce and seasonal fruit',
+    isActive: true
+  }
+];
+
+const initialPurchaseOrders: PurchaseOrderRecord[] = [
+  {
+    id: 'purchase-order-1001',
+    vendorId: 'vendor-north-foods',
+    vendorName: 'North Foods',
+    createdAt: '2026-03-12T09:00:00.000Z',
+    updatedAt: '2026-03-13T08:30:00.000Z',
+    expectedDate: '2026-03-15',
+    status: 'partiallyReceived',
+    note: 'Weekend dairy restock',
+    totalCost: 51.6,
+    lineItems: [
+      {
+        productId: 'product-milk',
+        productName: 'Whole Milk 1L',
+        quantityOrdered: 24,
+        quantityReceived: 12,
+        unitCost: 2.15
+      }
+    ]
+  }
 ];
 
 const initialCustomers: CustomerRecord[] = [
@@ -1453,6 +1658,37 @@ const initialOrders: OrderRecord[] = [
   }
 ];
 
+const initialReturns: ReturnRecord[] = [];
+
+const initialRestaurantReservations: RestaurantReservationRecord[] = [
+  {
+    id: 'reservation-1001',
+    guestName: 'Taylor Monroe',
+    contactPhone: '+1 555 881 0022',
+    partySize: 4,
+    date: '2026-03-14',
+    time: '19:00',
+    status: 'reserved',
+    tableId: 'table-main-5',
+    tableName: 'Main 5',
+    notes: 'Birthday dinner',
+    createdAt: '2026-03-13T16:00:00.000Z'
+  },
+  {
+    id: 'reservation-1002',
+    guestName: 'Walk-In Queue',
+    contactPhone: '',
+    partySize: 2,
+    date: '2026-03-14',
+    time: '19:20',
+    status: 'waitlist',
+    tableId: null,
+    tableName: 'Waitlist',
+    notes: 'Text when patio frees',
+    createdAt: '2026-03-14T18:45:00.000Z'
+  }
+];
+
 const initialCounterRecords: CounterRecord[] = [
   {
     id: 'counter-1',
@@ -1522,17 +1758,21 @@ function getStoreSnapshotFromState(state: StoreOpsState): StoreOpsSnapshot {
     todayOrders: state.todayOrders,
     categories: state.categories,
     products: state.products,
+    vendors: state.vendors,
+    purchaseOrders: state.purchaseOrders,
     customers: state.customers,
-  customerActivityRecords: state.customerActivityRecords,
-  staffRecords: state.staffRecords,
-  meetings: state.meetings,
-  appointments: state.appointments,
-  orders: state.orders,
+    customerActivityRecords: state.customerActivityRecords,
+    staffRecords: state.staffRecords,
+    meetings: state.meetings,
+    appointments: state.appointments,
+    orders: state.orders,
+    returns: state.returns,
     orderCustomFields: state.orderCustomFields,
     registerSession: state.registerSession,
     invoices: state.invoices,
     restaurantTables: state.restaurantTables,
     kitchenTickets: state.kitchenTickets,
+    restaurantReservations: state.restaurantReservations,
     salonServices: state.salonServices,
     salonBookings: state.salonBookings,
     priceBookItems: state.priceBookItems,
@@ -1549,7 +1789,8 @@ function getStoreSnapshotFromState(state: StoreOpsState): StoreOpsSnapshot {
     userAccounts: state.userAccounts,
     userAccountAuditRecords: state.userAccountAuditRecords,
     deploymentAuditRecords: state.deploymentAuditRecords,
-    tipsPoolBalance: state.tipsPoolBalance
+    tipsPoolBalance: state.tipsPoolBalance,
+    orgHierarchy: useOrgHierarchyStore.getState().getHierarchySnapshot()
   };
 }
 
@@ -1566,15 +1807,19 @@ export function isStoreOpsSnapshot(snapshot: unknown): snapshot is StoreOpsSnaps
     typeof candidate.todaySales === 'number' &&
     typeof candidate.todayOrders === 'number' &&
     Array.isArray(candidate.products) &&
+    (Array.isArray(candidate.vendors) || candidate.vendors === undefined) &&
+    (Array.isArray(candidate.purchaseOrders) || candidate.purchaseOrders === undefined) &&
     Array.isArray(candidate.customers) &&
     (Array.isArray(candidate.customerActivityRecords) || candidate.customerActivityRecords === undefined) &&
     Array.isArray(candidate.staffRecords) &&
     (Array.isArray(candidate.appointments) || candidate.appointments === undefined) &&
     Array.isArray(candidate.orders) &&
+    (Array.isArray(candidate.returns) || candidate.returns === undefined) &&
     (Array.isArray(candidate.orderCustomFields) || candidate.orderCustomFields === undefined) &&
     (Array.isArray(candidate.invoices) || candidate.invoices === undefined) &&
     (Array.isArray(candidate.restaurantTables) || candidate.restaurantTables === undefined) &&
     (Array.isArray(candidate.kitchenTickets) || candidate.kitchenTickets === undefined) &&
+    (Array.isArray(candidate.restaurantReservations) || candidate.restaurantReservations === undefined) &&
     (Array.isArray(candidate.salonServices) || candidate.salonServices === undefined) &&
     (Array.isArray(candidate.salonBookings) || candidate.salonBookings === undefined) &&
     (Array.isArray(candidate.priceBookItems) || candidate.priceBookItems === undefined) &&
@@ -1587,6 +1832,34 @@ export function isStoreOpsSnapshot(snapshot: unknown): snapshot is StoreOpsSnaps
     Array.isArray(candidate.userAccountAuditRecords) &&
     (Array.isArray(candidate.deploymentAuditRecords) || candidate.deploymentAuditRecords === undefined)
   );
+}
+
+export function computeCurrentBranchSnapshot(state: StoreOpsSnapshot): BranchSnapshotRecord {
+  const currentBranch = useOrgHierarchyStore.getState().getCurrentBranch();
+  const totalRevenue = state.todaySales;
+  const totalOrders = state.todayOrders;
+  const averageTicket = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+  const totalProducts = state.products.length;
+  const lowStockCount = state.products.filter((p) => p.stock <= p.reorderLevel).length;
+  const staffCount = state.staffRecords.length;
+  const clockedInStaff = state.staffRecords.filter((s) => s.isClockedIn).length;
+  const customerCount = state.customers.length;
+  const totalInventoryValue = state.products.reduce((sum, p) => sum + p.price * p.stock, 0);
+
+  return {
+    branchId: currentBranch?.id ?? 'current',
+    snapshotDate: new Date().toISOString().slice(0, 10),
+    totalRevenue,
+    totalOrders,
+    averageTicket: Math.round(averageTicket * 100) / 100,
+    totalProducts,
+    lowStockCount,
+    staffCount,
+    clockedInStaff,
+    customerCount,
+    totalInventoryValue: Math.round(totalInventoryValue * 100) / 100,
+    updatedAt: new Date().toISOString()
+  };
 }
 
 function sanitizeMoney(value: number): number {
@@ -1682,17 +1955,21 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
   todayOrders: 0,
   categories: initialCategories,
   products: initialProducts,
+  vendors: initialVendors,
+  purchaseOrders: initialPurchaseOrders,
   customers: initialCustomers,
   customerActivityRecords: initialCustomerActivityRecords,
   staffRecords: initialStaffRecords,
   meetings: initialMeetings,
   appointments: initialAppointments,
   orders: initialOrders,
+  returns: initialReturns,
   orderCustomFields: initialOrderCustomFields,
   registerSession: initialRegisterSession,
   invoices: initialInvoices,
   restaurantTables: initialRestaurantTables,
   kitchenTickets: initialKitchenTickets,
+  restaurantReservations: initialRestaurantReservations,
   salonServices: initialSalonServices,
   salonBookings: initialSalonBookings,
   priceBookItems: initialPriceBookItems,
@@ -1792,12 +2069,16 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
         deploymentSetupCompletedAt: nextSnapshot.storeProfile.deploymentSetupCompletedAt ?? null
       },
       globalPreferences: nextSnapshot.globalPreferences ?? initialGlobalPreferences,
+      vendors: nextSnapshot.vendors ?? [],
+      purchaseOrders: nextSnapshot.purchaseOrders ?? [],
       customerActivityRecords: nextSnapshot.customerActivityRecords ?? [],
       appointments: nextSnapshot.appointments ?? [],
+      returns: nextSnapshot.returns ?? [],
       orderCustomFields: nextSnapshot.orderCustomFields ?? [],
       invoices: nextSnapshot.invoices ?? [],
       restaurantTables: nextSnapshot.restaurantTables ?? [],
       kitchenTickets: nextSnapshot.kitchenTickets ?? [],
+      restaurantReservations: nextSnapshot.restaurantReservations ?? [],
       salonServices: nextSnapshot.salonServices ?? [],
       salonBookings: nextSnapshot.salonBookings ?? [],
       priceBookItems: nextSnapshot.priceBookItems ?? [],
@@ -1807,6 +2088,10 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
       routeManifests: nextSnapshot.routeManifests ?? [],
       deploymentAuditRecords: nextSnapshot.deploymentAuditRecords ?? []
     });
+
+    if (nextSnapshot.orgHierarchy) {
+      useOrgHierarchyStore.getState().hydrateHierarchySnapshot(nextSnapshot.orgHierarchy);
+    }
   },
 
   addCategory(input: AddCategoryInput): void {
@@ -1865,6 +2150,166 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
         reorderLevel: input.reorderLevel ?? 0
       });
     });
+  },
+
+  addVendor(input: AddVendorInput): void {
+    const normalizedName = input.name.trim();
+
+    if (!normalizedName) {
+      return;
+    }
+
+    const nextVendor: VendorRecord = {
+      id: `vendor-${normalizedName.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+      name: normalizedName,
+      contactName: input.contactName?.trim() ?? '',
+      phone: input.phone?.trim() ?? '',
+      email: input.email?.trim() ?? '',
+      leadTimeDays: Math.max(0, Math.round(input.leadTimeDays ?? 0)),
+      paymentTerms: input.paymentTerms?.trim() ?? 'Net 30',
+      notes: input.notes?.trim() ?? '',
+      isActive: true
+    };
+
+    set((state) => ({
+      vendors: [nextVendor, ...state.vendors]
+    }));
+  },
+
+  importVendors(inputs: ImportVendorInput[]): void {
+    inputs.forEach((input) => {
+      get().addVendor(input);
+    });
+  },
+
+  createPurchaseOrder(input: CreatePurchaseOrderInput): void {
+    const vendor = get().vendors.find((vendorRecord) => vendorRecord.id === input.vendorId);
+    const normalizedExpectedDate = input.expectedDate.trim();
+
+    if (!vendor || !normalizedExpectedDate || input.lineItems.length === 0) {
+      return;
+    }
+
+    const nextLineItems: PurchaseOrderLineItemRecord[] = input.lineItems
+      .map((lineItem) => {
+        const product = get().products.find((productRecord) => productRecord.id === lineItem.productId);
+
+        if (!product) {
+          return null;
+        }
+
+        const quantityOrdered = Math.max(1, Math.round(lineItem.quantityOrdered));
+        const unitCost = sanitizeMoney(lineItem.unitCost);
+
+        return {
+          productId: product.id,
+          productName: product.name,
+          quantityOrdered,
+          quantityReceived: 0,
+          unitCost
+        };
+      })
+      .filter((lineItem): lineItem is PurchaseOrderLineItemRecord => lineItem !== null);
+
+    if (!nextLineItems.length) {
+      return;
+    }
+
+    const nowIso = new Date().toISOString();
+    const nextPurchaseOrder: PurchaseOrderRecord = {
+      id: `purchase-order-${Date.now()}`,
+      vendorId: vendor.id,
+      vendorName: vendor.name,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      expectedDate: normalizedExpectedDate,
+      status: 'draft',
+      note: input.note?.trim() ?? '',
+      totalCost: sanitizeMoney(nextLineItems.reduce((sum, lineItem) => sum + lineItem.quantityOrdered * lineItem.unitCost, 0)),
+      lineItems: nextLineItems
+    };
+
+    set((state) => ({
+      purchaseOrders: [nextPurchaseOrder, ...state.purchaseOrders]
+    }));
+  },
+
+  setPurchaseOrderStatus(purchaseOrderId: string, status: PurchaseOrderStatus): void {
+    set((state) => ({
+      purchaseOrders: state.purchaseOrders.map((purchaseOrderRecord) =>
+        purchaseOrderRecord.id === purchaseOrderId
+          ? {
+              ...purchaseOrderRecord,
+              status,
+              updatedAt: new Date().toISOString()
+            }
+          : purchaseOrderRecord
+      )
+    }));
+  },
+
+  receivePurchaseOrderItems(purchaseOrderId: string, receivedItems: Array<{ productId: string; quantity: number }>): void {
+    if (!receivedItems.length) {
+      return;
+    }
+
+    const purchaseOrder = get().purchaseOrders.find((purchaseOrderRecord) => purchaseOrderRecord.id === purchaseOrderId);
+
+    if (!purchaseOrder || purchaseOrder.status === 'cancelled') {
+      return;
+    }
+
+    const receivedByProductId = new Map(
+      receivedItems.map((receivedItem) => [receivedItem.productId, Math.max(0, Math.round(receivedItem.quantity))])
+    );
+
+    const appliedReceipts = new Map<string, number>();
+    const nextLineItems = purchaseOrder.lineItems.map((lineItem) => {
+      const incomingQuantity = receivedByProductId.get(lineItem.productId) ?? 0;
+      const remainingQuantity = Math.max(0, lineItem.quantityOrdered - lineItem.quantityReceived);
+      const appliedQuantity = Math.min(remainingQuantity, incomingQuantity);
+
+      if (appliedQuantity > 0) {
+        appliedReceipts.set(lineItem.productId, appliedQuantity);
+      }
+
+      return {
+        ...lineItem,
+        quantityReceived: lineItem.quantityReceived + appliedQuantity
+      };
+    });
+
+    if (!appliedReceipts.size) {
+      return;
+    }
+
+    const isFullyReceived = nextLineItems.every((lineItem) => lineItem.quantityReceived >= lineItem.quantityOrdered);
+    const nextStatus: PurchaseOrderStatus = isFullyReceived ? 'received' : 'partiallyReceived';
+
+    set((state) => ({
+      purchaseOrders: state.purchaseOrders.map((purchaseOrderRecord) =>
+        purchaseOrderRecord.id === purchaseOrderId
+          ? {
+              ...purchaseOrderRecord,
+              lineItems: nextLineItems,
+              status: nextStatus,
+              updatedAt: new Date().toISOString()
+            }
+          : purchaseOrderRecord
+      ),
+      products: state.products.map((productRecord) => {
+        const appliedQuantity = appliedReceipts.get(productRecord.id);
+
+        if (!appliedQuantity) {
+          return productRecord;
+        }
+
+        return {
+          ...productRecord,
+          stock: productRecord.stock + appliedQuantity
+        };
+      })
+    }));
   },
 
   addCustomer(input: AddCustomerInput): void {
@@ -2773,6 +3218,205 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
     }
 
     return { ok: true, orderTotal: totalAmount, orderId };
+  },
+
+  createOrderReturn(input: CreateOrderReturnInput): { ok: true; returnId: string; replacementOrderId: string | null } {
+    const state = get();
+    const orderRecord = state.orders.find((order) => order.id === input.orderId);
+    const normalizedReason = input.reason.trim();
+
+    if (!orderRecord || !normalizedReason || input.lineItems.length === 0) {
+      throw new Error('Valid order, reason, and return lines are required');
+    }
+
+    const nowIso = new Date().toISOString();
+    const processedReturnItems: ReturnLineItemRecord[] = [];
+    const restockByProductId = new Map<string, number>();
+    const exchangeByProductId = new Map<string, number>();
+
+    input.lineItems.forEach((lineItem) => {
+      const orderItem = orderRecord.items.find((item) => item.productId === lineItem.productId);
+
+      if (!orderItem) {
+        return;
+      }
+
+      const quantity = Math.max(0, Math.min(orderItem.quantity, Math.round(lineItem.quantity)));
+
+      if (quantity <= 0) {
+        return;
+      }
+
+      const amount = sanitizeMoney(orderItem.unitPrice * quantity);
+      processedReturnItems.push({
+        productId: orderItem.productId,
+        productName: orderItem.productName,
+        quantity,
+        amount
+      });
+
+      if (input.restocked) {
+        restockByProductId.set(orderItem.productId, (restockByProductId.get(orderItem.productId) ?? 0) + quantity);
+      }
+    });
+
+    if (!processedReturnItems.length) {
+      throw new Error('Return lines do not match the selected order');
+    }
+
+    const returnAmount = sanitizeMoney(processedReturnItems.reduce((sum, lineItem) => sum + lineItem.amount, 0));
+    let replacementOrderId: string | null = null;
+    let replacementOrder: OrderRecord | null = null;
+
+    if (input.resolution === 'exchange') {
+      const replacementItems: OrderItemRecord[] = (input.exchangeItems ?? [])
+        .map((exchangeItem) => {
+          const product = state.products.find((productRecord) => productRecord.id === exchangeItem.productId);
+
+          if (!product) {
+            return null;
+          }
+
+          const quantity = Math.max(0, Math.min(product.stock, Math.round(exchangeItem.quantity)));
+
+          if (quantity <= 0) {
+            return null;
+          }
+
+          exchangeByProductId.set(product.id, (exchangeByProductId.get(product.id) ?? 0) + quantity);
+
+          return {
+            productId: product.id,
+            productName: product.name,
+            quantity,
+            unitPrice: product.price,
+            lineTotal: sanitizeMoney(product.price * quantity)
+          };
+        })
+        .filter((item): item is OrderItemRecord => item !== null);
+
+      if (replacementItems.length > 0) {
+        const replacementSubTotal = sanitizeMoney(replacementItems.reduce((sum, item) => sum + item.lineTotal, 0));
+        const replacementTaxAmount = sanitizeMoney(replacementSubTotal * state.taxRate);
+        const replacementTotalAmount = sanitizeMoney(replacementSubTotal + replacementTaxAmount);
+        replacementOrderId = `order-exchange-${Date.now()}`;
+        replacementOrder = {
+          id: replacementOrderId,
+          createdAt: nowIso,
+          updatedAt: nowIso,
+          status: 'completed',
+          statusNote:
+            replacementTotalAmount > returnAmount
+              ? `Exchange created with additional balance due ${formatMoney(replacementTotalAmount - returnAmount)}`
+              : 'Created from return exchange',
+          items: replacementItems,
+          subTotal: replacementSubTotal,
+          discountAmount: 0,
+          taxAmount: replacementTaxAmount,
+          totalAmount: replacementTotalAmount,
+          paymentMethod: orderRecord.paymentMethod,
+          customerId: orderRecord.customerId,
+          customerName: orderRecord.customerName,
+          customFieldValues: {
+            exchangeForOrderId: orderRecord.id
+          },
+          deliveryStatus: 'notRequired',
+          deliveryDate: null
+        };
+      }
+    }
+
+    const shouldMarkRefunded = returnAmount >= orderRecord.totalAmount;
+    const nextOrderStatus: OrderStatus = shouldMarkRefunded ? 'refunded' : orderRecord.status;
+    const nextOrderNote =
+      input.resolution === 'exchange'
+        ? 'Exchange processed from order management'
+        : input.resolution === 'storeCredit'
+          ? 'Return converted to store credit'
+          : 'Refund processed from order management';
+
+    const customerActivityRecord: CustomerActivityRecord | null = orderRecord.customerId
+      ? {
+          id: `customerActivity-${Date.now()}-return`,
+          customerId: orderRecord.customerId,
+          customerName: orderRecord.customerName,
+          activityType:
+            input.resolution === 'exchange'
+              ? 'exchangeCompleted'
+              : input.resolution === 'storeCredit'
+                ? 'storeCreditIssued'
+                : 'refundIssued',
+          summary:
+            input.resolution === 'exchange'
+              ? `Exchange created against ${orderRecord.id}`
+              : input.resolution === 'storeCredit'
+                ? `Store credit issued against ${orderRecord.id}`
+                : `Refund issued against ${orderRecord.id}`,
+          amount: returnAmount,
+          points: 0,
+          occurredAt: nowIso,
+          referenceId: orderRecord.id
+        }
+      : null;
+
+    const nextReturnRecord: ReturnRecord = {
+      id: `return-${Date.now()}`,
+      orderId: orderRecord.id,
+      customerId: orderRecord.customerId,
+      customerName: orderRecord.customerName,
+      reason: normalizedReason,
+      resolution: input.resolution,
+      restocked: input.restocked,
+      amount: returnAmount,
+      createdAt: nowIso,
+      replacementOrderId,
+      lineItems: processedReturnItems
+    };
+
+    set((previous) => ({
+      returns: [nextReturnRecord, ...previous.returns],
+      orders: [
+        ...(replacementOrder ? [replacementOrder] : []),
+        ...previous.orders.map((currentOrder) =>
+          currentOrder.id === orderRecord.id
+            ? {
+                ...currentOrder,
+                status: nextOrderStatus,
+                statusNote: nextOrderNote,
+                updatedAt: nowIso
+              }
+            : currentOrder
+        )
+      ],
+      customerActivityRecords: customerActivityRecord
+        ? [customerActivityRecord, ...previous.customerActivityRecords]
+        : previous.customerActivityRecords,
+      customers: previous.customers.map((customerRecord) => {
+        if (customerRecord.id !== orderRecord.customerId || input.resolution !== 'storeCredit') {
+          return customerRecord;
+        }
+
+        return {
+          ...customerRecord,
+          creditBalance: sanitizeMoney(customerRecord.creditBalance + returnAmount)
+        };
+      }),
+      products: previous.products.map((productRecord) => {
+        const restockedQuantity = restockByProductId.get(productRecord.id) ?? 0;
+        const exchangedQuantity = exchangeByProductId.get(productRecord.id) ?? 0;
+
+        if (restockedQuantity === 0 && exchangedQuantity === 0) {
+          return productRecord;
+        }
+
+        return {
+          ...productRecord,
+          stock: Math.max(0, productRecord.stock + restockedQuantity - exchangedQuantity)
+        };
+      })
+    }));
+
+    return { ok: true, returnId: nextReturnRecord.id, replacementOrderId };
   },
 
   adjustStock(productId: string, change: number): void {
@@ -3710,6 +4354,82 @@ export const useStoreOpsStore = create<StoreOpsState>((set, get) => ({
         }
 
         return tableRecord;
+      })
+    }));
+  },
+
+  addRestaurantReservation(input: AddRestaurantReservationInput): void {
+    const normalizedGuestName = input.guestName.trim();
+    const normalizedDate = input.date.trim();
+    const normalizedTime = input.time.trim();
+    const partySize = Math.max(1, Math.round(input.partySize));
+    const tableRecord = input.tableId ? get().restaurantTables.find((table) => table.id === input.tableId) : null;
+
+    if (!normalizedGuestName || !normalizedDate || !normalizedTime) {
+      return;
+    }
+
+    const nextReservation: RestaurantReservationRecord = {
+      id: `reservation-${Date.now()}`,
+      guestName: normalizedGuestName,
+      contactPhone: input.contactPhone?.trim() ?? '',
+      partySize,
+      date: normalizedDate,
+      time: normalizedTime,
+      status: tableRecord ? 'reserved' : 'waitlist',
+      tableId: tableRecord?.id ?? null,
+      tableName: tableRecord?.name ?? 'Waitlist',
+      notes: input.notes?.trim() ?? '',
+      createdAt: new Date().toISOString()
+    };
+
+    set((state) => ({
+      restaurantReservations: [nextReservation, ...state.restaurantReservations],
+      restaurantTables: state.restaurantTables.map((table) =>
+        table.id === tableRecord?.id
+          ? {
+              ...table,
+              status: 'reserved'
+            }
+          : table
+      )
+    }));
+  },
+
+  setRestaurantReservationStatus(reservationId: string, status: RestaurantReservationStatus): void {
+    const reservationRecord = get().restaurantReservations.find((reservation) => reservation.id === reservationId);
+
+    set((state) => ({
+      restaurantReservations: state.restaurantReservations.map((reservation) =>
+        reservation.id === reservationId ? { ...reservation, status } : reservation
+      ),
+      restaurantTables: state.restaurantTables.map((table) => {
+        if (table.id !== reservationRecord?.tableId) {
+          return table;
+        }
+
+        if (status === 'seated') {
+          return {
+            ...table,
+            status: 'occupied'
+          };
+        }
+
+        if (status === 'completed' || status === 'cancelled') {
+          return {
+            ...table,
+            status: table.currentTicketId ? 'occupied' : 'available'
+          };
+        }
+
+        if (status === 'reserved') {
+          return {
+            ...table,
+            status: 'reserved'
+          };
+        }
+
+        return table;
       })
     }));
   },

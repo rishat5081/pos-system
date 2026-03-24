@@ -33,10 +33,12 @@ describe('dashboard and settings pages', () => {
     render(<DashboardPage />);
 
     expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeInTheDocument();
-    expect(screen.getByText('Sales')).toBeInTheDocument();
-    expect(screen.getByText('Orders')).toBeInTheDocument();
-    expect(screen.getByText('Inventory Value')).toBeInTheDocument();
-    expect(screen.getByText('Low Stock Items')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Sales activity trend chart' })).toBeInTheDocument();
+    expect(screen.getByText('Store Momentum')).toBeInTheDocument();
+    expect(screen.getAllByText('Revenue').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Orders').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Avg Ticket').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Low Stock').length).toBeGreaterThan(0);
   });
 
   it('shows settings form scaffold', () => {

@@ -51,6 +51,8 @@ describe('storeOpsStore', () => {
         { id: 'product-rice', name: 'Rice 5kg', category: 'Grocery', price: 12.5, stock: 30, reorderLevel: 12 },
         { id: 'product-chips', name: 'Potato Chips', category: 'Snacks', price: 1.75, stock: 16, reorderLevel: 22 }
       ],
+      vendors: [],
+      purchaseOrders: [],
       customers: [
         {
           id: 'customer-walk-in',
@@ -100,10 +102,12 @@ describe('storeOpsStore', () => {
       meetings: [],
       appointments: [],
       orders: [],
+      returns: [],
       orderCustomFields: [],
       invoices: [],
       restaurantTables: [],
       kitchenTickets: [],
+      restaurantReservations: [],
       salonServices: [],
       salonBookings: [],
       priceBookItems: [],
@@ -132,6 +136,7 @@ describe('storeOpsStore', () => {
       counterRecords: [],
       userAccounts: [],
       userAccountAuditRecords: [],
+      deploymentAuditRecords: [],
       tipsPoolBalance: 0,
       registerSession: {
         isOpen: false,
@@ -388,6 +393,105 @@ describe('storeOpsStore', () => {
     expect(nextState.appointments[0]?.status).toBe('completed');
     expect(nextState.shiftPlans[0]?.roleDuringShift).toBe('Lead Cashier');
     expect(nextState.leaveRequests[0]?.status).toBe('approved');
+  });
+
+  it('handles vendors, purchase orders, receiving, returns, and restaurant reservations', () => {
+    const state = useStoreOpsStore.getState();
+
+    state.addVendor({
+      name: 'North Foods',
+      contactName: 'Alina West',
+      phone: '+1 555 300 1122',
+      email: 'orders@northfoods.example',
+      leadTimeDays: 3,
+      paymentTerms: 'Net 15'
+    });
+
+    const vendor = useStoreOpsStore.getState().vendors[0];
+    state.createPurchaseOrder({
+      vendorId: vendor.id,
+      expectedDate: '2026-03-21',
+      note: 'Weekend replenishment',
+      lineItems: [
+        {
+          productId: 'product-milk',
+          quantityOrdered: 5,
+          unitCost: 2.1
+        }
+      ]
+    });
+
+    const purchaseOrder = useStoreOpsStore.getState().purchaseOrders[0];
+    state.setPurchaseOrderStatus(purchaseOrder.id, 'sent');
+    state.receivePurchaseOrderItems(purchaseOrder.id, [{ productId: 'product-milk', quantity: 3 }]);
+
+    expect(useStoreOpsStore.getState().purchaseOrders[0].status).toBe('partiallyReceived');
+    expect(useStoreOpsStore.getState().products.find((product) => product.id === 'product-milk')?.stock).toBe(44);
+
+    state.importOrders([
+      {
+        id: 'order-return-test',
+        customerName: 'Emily Rivera',
+        totalAmount: 8.4,
+        paymentMethod: 'card',
+        status: 'completed',
+        createdAt: '2026-03-14T10:00:00.000Z'
+      }
+    ]);
+
+    useStoreOpsStore.setState((previous) => ({
+      orders: previous.orders.map((order) =>
+        order.id === 'order-return-test'
+          ? {
+              ...order,
+              customerId: 'customer-emily',
+              items: [
+                {
+                  productId: 'product-apple',
+                  productName: 'Apple Pack',
+                  quantity: 2,
+                  unitPrice: 4.2,
+                  lineTotal: 8.4
+                }
+              ],
+              subTotal: 8.4,
+              totalAmount: 8.4
+            }
+          : order
+      )
+    }));
+
+    const returnResult = useStoreOpsStore.getState().createOrderReturn({
+      orderId: 'order-return-test',
+      reason: 'Damaged pack',
+      resolution: 'exchange',
+      restocked: true,
+      lineItems: [{ productId: 'product-apple', quantity: 1 }],
+      exchangeItems: [{ productId: 'product-chips', quantity: 1 }]
+    });
+
+    const postReturnState = useStoreOpsStore.getState();
+    expect(returnResult.ok).toBe(true);
+    expect(postReturnState.returns.length).toBe(1);
+    expect(postReturnState.orders.some((order) => order.id === returnResult.replacementOrderId)).toBe(true);
+    expect(postReturnState.products.find((product) => product.id === 'product-apple')?.stock).toBe(79);
+
+    state.addRestaurantTable({ name: 'Main 6', area: 'Main Hall', seats: 4 });
+    const table = useStoreOpsStore.getState().restaurantTables[0];
+    state.addRestaurantReservation({
+      guestName: 'Jordan Miles',
+      contactPhone: '+1 555 200 2211',
+      partySize: 4,
+      date: '2026-03-22',
+      time: '19:00',
+      tableId: table.id,
+      notes: 'Window seat'
+    });
+    const reservation = useStoreOpsStore.getState().restaurantReservations[0];
+    state.setRestaurantReservationStatus(reservation.id, 'seated');
+
+    expect(useStoreOpsStore.getState().restaurantReservations[0].status).toBe('seated');
+    expect(useStoreOpsStore.getState().restaurantTables[0].status).toBe('occupied');
   });
 
   it('supports deployment profiles and vertical operations for restaurant, salon, field service, and routes', () => {

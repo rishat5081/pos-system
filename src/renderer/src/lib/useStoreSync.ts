@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { getDesktopApi } from '@/lib/desktopApi';
 import { useAuthStore } from '@/stores/authStore';
+import { useOrgHierarchyStore } from '@/stores/orgHierarchyStore';
 import { isStoreOpsSnapshot, type StoreOpsSnapshot, useStoreOpsStore } from '@/stores/storeOpsStore';
 
 const queueDebounceMs = 800;
@@ -107,6 +108,25 @@ export function useStoreSync(): void {
       }
     };
 
+    const unsubscribeOrg = useOrgHierarchyStore.subscribe(() => {
+      const snapshot = useStoreOpsStore.getState().getStoreSnapshot();
+      const snapshotHash = getSnapshotHash(snapshot);
+
+      if (snapshotHash === lastSnapshotHash) {
+        return;
+      }
+
+      lastSnapshotHash = snapshotHash;
+
+      if (queueTimer) {
+        clearTimeout(queueTimer);
+      }
+
+      queueTimer = setTimeout(() => {
+        void queueSnapshot(snapshot);
+      }, queueDebounceMs);
+    });
+
     const unsubscribe = useStoreOpsStore.subscribe(() => {
       const snapshot = useStoreOpsStore.getState().getStoreSnapshot();
       const snapshotHash = getSnapshotHash(snapshot);
@@ -144,6 +164,7 @@ export function useStoreSync(): void {
 
       clearInterval(autoSyncInterval);
       unsubscribe();
+      unsubscribeOrg();
     };
   }, [storeId, userId]);
 }

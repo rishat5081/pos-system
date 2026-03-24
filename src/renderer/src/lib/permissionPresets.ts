@@ -35,7 +35,8 @@ export const permissionPresets: PermissionPresetRecord[] = [
       'fieldDispatch',
       'fieldEstimates',
       'routeSubscriptions',
-      'routeManifests'
+      'routeManifests',
+      'companyAnalytics'
     ]
   },
   {
@@ -92,7 +93,8 @@ export const permissionPresets: PermissionPresetRecord[] = [
       'fieldDispatch',
       'fieldEstimates',
       'routeSubscriptions',
-      'routeManifests'
+      'routeManifests',
+      'companyAnalytics'
     ],
     revokedFeatures: []
   }

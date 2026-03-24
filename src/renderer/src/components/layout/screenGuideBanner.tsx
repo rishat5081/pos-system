@@ -9,88 +9,87 @@ interface GuideContent {
 
 const guideByRoute: Record<string, GuideContent> = {
   '/app': {
-    title: 'Dashboard Overview',
-    purpose: 'Use this screen to monitor live KPIs and store health.',
-    actions: ['Review sales and order KPIs', 'Check staff attendance status', 'Verify register and loyalty status']
+    title: 'Dashboard',
+    purpose: 'Live store pulse',
+    actions: ['KPIs', 'Team', 'Register']
   },
   '/app/businessSuite': {
-    title: 'Business Suite Guide',
-    purpose: 'Use this screen to switch between retail, restaurant, salon, field service, and route-delivery operating models.',
-    actions: ['Select an industry mode', 'Review workflows and shared capabilities', 'Inspect the operational boards for that business type']
+    title: 'Business Suite',
+    purpose: 'Vertical operations',
+    actions: ['Switch mode', 'Run board', 'Track load']
   },
   '/app/pos': {
-    title: 'POS Terminal Guide',
-    purpose: 'Use this screen to process customer checkout from cart to payment.',
-    actions: ['Open register session', 'Add products and update quantity', 'Complete checkout and confirm payment']
+    title: 'POS',
+    purpose: 'Checkout and receipt',
+    actions: ['Open register', 'Build cart', 'Print bill']
   },
   '/app/orders': {
-    title: 'Order Management Guide',
-    purpose: 'Use this screen to import orders, customize fields, manage invoices, and track lifecycle status.',
-    actions: ['Analyze and map CSV columns', 'Create invoices with due reminders', 'Update order status and notes']
+    title: 'Orders',
+    purpose: 'Orders, invoices, returns',
+    actions: ['Import', 'Invoice', 'Return']
   },
   '/app/counters': {
-    title: 'Counter Management Guide',
-    purpose: 'Use this screen to control counter assignments and active tasks.',
-    actions: ['Assign staff to counter', 'Update counter task', 'Release a counter when shift changes']
+    title: 'Counters',
+    purpose: 'Lane assignment',
+    actions: ['Assign', 'Track task', 'Release']
   },
   '/app/inventory': {
-    title: 'Inventory Management Guide',
-    purpose: 'Use this screen to maintain product stock and category setup.',
-    actions: ['Track low stock alerts', 'Adjust product stock', 'Create category and product records']
+    title: 'Inventory',
+    purpose: 'Stock and purchasing',
+    actions: ['Products', 'Vendors', 'Receiving']
   },
   '/app/customers': {
-    title: 'Customer Management Guide',
-    purpose: 'Use this screen to manage CRM, loyalty, credit, and customer history.',
-    actions: ['Search and select customer', 'Review profile and timeline', 'Add credit or redeem points']
+    title: 'Customers',
+    purpose: 'CRM and loyalty',
+    actions: ['Profiles', 'History', 'Credit']
   },
   '/app/hr': {
-    title: 'HR Management Guide',
-    purpose: 'Use this screen to run people operations through focused HR workflows.',
-    actions: ['Select workflow first', 'Complete workflow form actions', 'Review generated history and records']
+    title: 'HR',
+    purpose: 'People operations',
+    actions: ['Directory', 'Payroll', 'Calendar']
   },
   '/app/superAdmin': {
-    title: 'Super Admin Guide',
-    purpose: 'Use this screen for owner-level live store supervision.',
-    actions: ['Monitor staff and counters in real time', 'Review throughput and transactions', 'Dispatch counter operations']
+    title: 'Super Admin',
+    purpose: 'Owner control room',
+    actions: ['Live view', 'Counters', 'Throughput']
   },
   '/app/userManagement': {
-    title: 'User Management Guide',
-    purpose: 'Use this screen to control account access and role permissions.',
-    actions: ['Create new system users', 'Apply job-function permission presets', 'Review account audit trail']
+    title: 'Users',
+    purpose: 'Access control',
+    actions: ['Create', 'Preset', 'Audit']
   },
   '/app/reports': {
-    title: 'Reports Guide',
-    purpose: 'Use this screen to inspect and export operational reports.',
-    actions: ['Review financial and order summaries', 'Track department transfers', 'Export required reports']
+    title: 'Reports',
+    purpose: 'Operational exports',
+    actions: ['Finance', 'Movement', 'Export']
   },
   '/app/settings': {
-    title: 'Settings Guide',
-    purpose: 'Use this screen to configure deployment scope, review module access, and control sync behavior.',
-    actions: ['Update deployment and locale settings', 'Review role access per enabled module', 'Re-run setup or trigger sync if needed']
+    title: 'Settings',
+    purpose: 'Deployment and sync',
+    actions: ['Locale', 'Modules', 'Sync']
   }
 };
 
 export function ScreenGuideBanner() {
   const location = useLocation();
 
-  const guideContent = useMemo(() => {
-    return guideByRoute[location.pathname] ?? null;
-  }, [location.pathname]);
+  const guideContent = useMemo(() => guideByRoute[location.pathname] ?? null, [location.pathname]);
 
   if (!guideContent) {
     return <></>;
   }
 
   return (
-    <section className="mb-4 rounded-xl border border-slate-200 bg-white p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.1em] text-slate-500">Screen Purpose</p>
-      <p className="mt-1 text-base font-semibold text-slate-900">{guideContent.title}</p>
-      <p className="mt-1 text-sm text-slate-600">{guideContent.purpose}</p>
-      <div className="mt-3 grid gap-2 md:grid-cols-3">
+    <section className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/70 bg-white/70 px-4 py-3 shadow-sm backdrop-blur">
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">{guideContent.purpose}</p>
+        <p className="truncate text-sm font-semibold text-slate-900">{guideContent.title}</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
         {guideContent.actions.map((action) => (
-          <p key={action} className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
+          <span key={action} className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-700">
             {action}
-          </p>
+          </span>
         ))}
       </div>
     </section>

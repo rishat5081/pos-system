@@ -3,13 +3,101 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { formatCurrencyValue } from '@/lib/globalFormat';
-import { type PaymentMethod, useStoreOpsStore } from '@/stores/storeOpsStore';
+import {
+  type GlobalPreferencesRecord,
+  type OrderRecord,
+  type PaymentMethod,
+  useStoreOpsStore
+} from '@/stores/storeOpsStore';
+
+function printReceiptDocument(
+  storeName: string,
+  storeAddress: string,
+  globalPreferences: GlobalPreferencesRecord,
+  orderRecord: OrderRecord
+): void {
+  const receiptWindow = window.open('', '_blank', 'width=420,height=720');
+
+  if (!receiptWindow) {
+    return;
+  }
+
+  const formatAmount = (value: number): string => formatCurrencyValue(value, globalPreferences);
+  const itemRows = orderRecord.items
+    .map(
+      (item) =>
+        '<tr>' +
+        '<td style="padding:6px 0;">' +
+        item.productName +
+        ' x' +
+        item.quantity +
+        '</td>' +
+        '<td style="padding:6px 0; text-align:right;">' +
+        formatAmount(item.lineTotal) +
+        '</td>' +
+        '</tr>'
+    )
+    .join('');
+
+  receiptWindow.document.write(
+    '<!doctype html><html><head><title>Print Bill</title><style>' +
+      'body{font-family:Arial,sans-serif;padding:24px;color:#0f172a;}' +
+      '.receipt{max-width:320px;margin:0 auto;}' +
+      '.brand{font-size:24px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}' +
+      '.meta{font-size:12px;color:#475569;margin-bottom:16px;}' +
+      '.block{border-top:1px dashed #cbd5e1;padding-top:12px;margin-top:12px;}' +
+      'table{width:100%;border-collapse:collapse;font-size:13px;}' +
+      '.totals td{padding:4px 0;}' +
+      '.total{font-size:15px;font-weight:700;}' +
+      '</style></head><body><div class="receipt">' +
+      '<div class="brand">' +
+      storeName +
+      '</div>' +
+      '<div class="meta">' +
+      storeAddress +
+      '<br/>Bill: ' +
+      orderRecord.id +
+      '<br/>Date: ' +
+      new Date(orderRecord.createdAt).toLocaleString() +
+      '<br/>Customer: ' +
+      orderRecord.customerName +
+      '<br/>Payment: ' +
+      orderRecord.paymentMethod.toUpperCase() +
+      '</div>' +
+      '<div class="block"><table>' +
+      itemRows +
+      '</table></div>' +
+      '<div class="block"><table class="totals">' +
+      '<tr><td>Sub Total</td><td style="text-align:right;">' +
+      formatAmount(orderRecord.subTotal) +
+      '</td></tr>' +
+      '<tr><td>Discount</td><td style="text-align:right;">-' +
+      formatAmount(orderRecord.discountAmount) +
+      '</td></tr>' +
+      '<tr><td>Tax</td><td style="text-align:right;">' +
+      formatAmount(orderRecord.taxAmount) +
+      '</td></tr>' +
+      '<tr class="total"><td>Total</td><td style="text-align:right;">' +
+      formatAmount(orderRecord.totalAmount) +
+      '</td></tr>' +
+      '</table></div>' +
+      '<div class="block" style="font-size:12px;color:#475569;">Thank you for shopping with ' +
+      storeName +
+      '.</div>' +
+      '</div></body></html>'
+  );
+  receiptWindow.document.close();
+  receiptWindow.focus();
+  receiptWindow.print();
+}
 
 export function PosPage() {
   const products = useStoreOpsStore((state) => state.products);
   const customers = useStoreOpsStore((state) => state.customers);
+  const orders = useStoreOpsStore((state) => state.orders);
   const taxRate = useStoreOpsStore((state) => state.taxRate);
   const globalPreferences = useStoreOpsStore((state) => state.globalPreferences);
+  const storeProfile = useStoreOpsStore((state) => state.storeProfile);
   const registerSession = useStoreOpsStore((state) => state.registerSession);
   const processCheckout = useStoreOpsStore((state) => state.processCheckout);
   const adjustStock = useStoreOpsStore((state) => state.adjustStock);
@@ -22,6 +110,7 @@ export function PosPage() {
   const [discountAmount, setDiscountAmount] = useState<string>('0');
   const [openingCash, setOpeningCash] = useState<string>('500');
   const [lastOrderMessage, setLastOrderMessage] = useState<string>('');
+  const [lastReceiptOrderId, setLastReceiptOrderId] = useState<string>('');
   const [checkoutError, setCheckoutError] = useState<string>('');
   const [productSearchInput, setProductSearchInput] = useState<string>('');
   const [showCheckoutConfirm, setShowCheckoutConfirm] = useState<boolean>(false);
@@ -64,6 +153,7 @@ export function PosPage() {
   const normalizedDiscount = Math.max(0, Math.min(Number(discountAmount) || 0, subTotal));
   const taxAmount = (subTotal - normalizedDiscount) * taxRate;
   const totalAmount = subTotal - normalizedDiscount + taxAmount;
+  const lastReceiptOrder = lastReceiptOrderId ? orders.find((orderRecord) => orderRecord.id === lastReceiptOrderId) ?? null : null;
 
   useEffect(() => {
     cartRef.current = cart;
@@ -156,6 +246,7 @@ export function PosPage() {
       setLastOrderMessage(
         `Payment successful. Order ${result.orderId} total: ${formatCurrencyValue(result.orderTotal, globalPreferences)}`
       );
+      setLastReceiptOrderId(result.orderId);
       setCheckoutError('');
       setCart({});
       setDiscountAmount('0');
@@ -163,6 +254,7 @@ export function PosPage() {
       const message = error instanceof Error ? error.message : 'Checkout failed';
       setCheckoutError(message);
       setLastOrderMessage('');
+      setLastReceiptOrderId('');
     }
   };
 
@@ -182,6 +274,14 @@ export function PosPage() {
       currentCash: registerSession.currentCash
     });
     endRegisterSession();
+  };
+
+  const handlePrintBill = (): void => {
+    if (!lastReceiptOrder) {
+      return;
+    }
+
+    printReceiptDocument(storeProfile.storeName, storeProfile.address, globalPreferences, lastReceiptOrder);
   };
 
   return (
@@ -458,7 +558,21 @@ export function PosPage() {
             )}
             {checkoutError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{checkoutError}</p>}
             {lastOrderMessage && (
-              <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{lastOrderMessage}</p>
+              <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+                <p className="text-sm text-emerald-700">{lastOrderMessage}</p>
+                {lastReceiptOrder && (
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white px-3 py-2">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Last Bill</p>
+                      <p className="text-sm font-semibold text-slate-900">{storeProfile.storeName}</p>
+                      <p className="text-xs text-slate-500">{lastReceiptOrder.id}</p>
+                    </div>
+                    <Button type="button" className="rounded-lg bg-slate-950 hover:bg-slate-800" onClick={handlePrintBill}>
+                      Print Bill
+                    </Button>
+                  </div>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>

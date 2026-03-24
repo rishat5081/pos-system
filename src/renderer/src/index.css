@@ -100,6 +100,36 @@ html.dark .text-slate-500 {
   color: rgb(148, 163, 184) !important;
 }
 
+html.dark .bg-emerald-50,
+html.dark .bg-emerald-50\/60 {
+  background-color: rgba(6, 78, 59, 0.35) !important;
+}
+
+html.dark .bg-red-50,
+html.dark .bg-red-50\/60 {
+  background-color: rgba(127, 29, 29, 0.35) !important;
+}
+
+html.dark .bg-amber-50 {
+  background-color: rgba(120, 53, 15, 0.35) !important;
+}
+
+html.dark .bg-cyan-50 {
+  background-color: rgba(22, 78, 99, 0.35) !important;
+}
+
+html.dark .text-emerald-600 { color: rgb(52, 211, 153) !important; }
+html.dark .text-emerald-700 { color: rgb(110, 231, 183) !important; }
+html.dark .text-emerald-900 { color: rgb(209, 250, 229) !important; }
+html.dark .text-red-600 { color: rgb(248, 113, 113) !important; }
+html.dark .text-red-700 { color: rgb(252, 165, 165) !important; }
+html.dark .text-red-900 { color: rgb(254, 226, 226) !important; }
+html.dark .text-amber-600 { color: rgb(251, 191, 36) !important; }
+html.dark .text-cyan-700 { color: rgb(103, 232, 249) !important; }
+
+html.dark .border-emerald-200 { border-color: rgba(6, 95, 70, 0.5) !important; }
+html.dark .border-red-200 { border-color: rgba(127, 29, 29, 0.5) !important; }
+
 #root {
   min-height: 100vh;
 }

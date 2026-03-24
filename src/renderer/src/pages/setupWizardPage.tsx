@@ -4,6 +4,7 @@ import { deploymentTemplates } from '@/lib/deploymentConfig';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useOrgHierarchyStore } from '@/stores/orgHierarchyStore';
 import { useStoreOpsStore } from '@/stores/storeOpsStore';
 
 export function SetupWizardPage() {
@@ -14,6 +15,20 @@ export function SetupWizardPage() {
   const [storeNameInput, setStoreNameInput] = useState<string>(storeProfile.storeName);
   const [storeCodeInput, setStoreCodeInput] = useState<string>(storeProfile.storeCode);
   const [addressInput, setAddressInput] = useState<string>(storeProfile.address);
+  const [isMultiBranch, setIsMultiBranch] = useState<boolean>(false);
+  const [orgCompanyName, setOrgCompanyName] = useState<string>('');
+  const [orgCompanyCode, setOrgCompanyCode] = useState<string>('');
+  const [orgCountryName, setOrgCountryName] = useState<string>('');
+  const [orgCountryCode, setOrgCountryCode] = useState<string>('');
+  const [orgCityName, setOrgCityName] = useState<string>('');
+  const [orgAreaName, setOrgAreaName] = useState<string>('');
+
+  const addCompany = useOrgHierarchyStore((s) => s.addCompany);
+  const addCountry = useOrgHierarchyStore((s) => s.addCountry);
+  const addCity = useOrgHierarchyStore((s) => s.addCity);
+  const addArea = useOrgHierarchyStore((s) => s.addArea);
+  const addBranch = useOrgHierarchyStore((s) => s.addBranch);
+  const ensureDefaultHierarchy = useOrgHierarchyStore((s) => s.ensureDefaultHierarchy);
 
   const selectedTemplate = useMemo(
     () => deploymentTemplates.find((template) => template.label === selectedTemplateLabel) ?? deploymentTemplates[deploymentTemplates.length - 1],
@@ -30,6 +45,17 @@ export function SetupWizardPage() {
       storeCode: storeCodeInput,
       address: addressInput
     });
+
+    if (isMultiBranch && orgCompanyName.trim() && orgCompanyCode.trim() && orgCountryName.trim() && orgCountryCode.trim() && orgCityName.trim() && orgAreaName.trim()) {
+      const companyId = addCompany(orgCompanyName, orgCompanyCode);
+      const countryId = addCountry(companyId, orgCountryName, orgCountryCode);
+      const cityId = addCity(countryId, orgCityName);
+      const areaId = addArea(cityId, orgAreaName);
+      addBranch(areaId, storeNameInput, storeCodeInput, true);
+    } else {
+      ensureDefaultHierarchy(storeNameInput, storeCodeInput);
+    }
+
     navigate('/app', { replace: true });
   };
 
@@ -88,6 +114,29 @@ export function SetupWizardPage() {
                 <p className="mt-2 text-lg font-semibold">{selectedTemplate.businessType}</p>
                 <p className="mt-2 text-sm text-slate-300">Primary industry: {selectedTemplate.primaryIndustry}</p>
                 <p className="mt-1 text-sm text-slate-300">Enabled modules: {selectedTemplate.enabledFeatures.length}</p>
+              </div>
+
+              <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+                <label className="flex items-center gap-3 text-sm">
+                  <input type="checkbox" checked={isMultiBranch} onChange={(e) => setIsMultiBranch(e.target.checked)} className="h-4 w-4 rounded" />
+                  <span className="text-slate-300">This branch belongs to a multi-branch organization</span>
+                </label>
+
+                {isMultiBranch && (
+                  <div className="mt-3 space-y-3">
+                    <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Organization Placement</p>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input aria-label="Company Name" value={orgCompanyName} onChange={(e) => setOrgCompanyName(e.target.value)} placeholder="Company name" className="border-slate-700 text-slate-100" />
+                      <Input aria-label="Company Code" value={orgCompanyCode} onChange={(e) => setOrgCompanyCode(e.target.value)} placeholder="Company code" className="border-slate-700 text-slate-100" />
+                    </div>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <Input aria-label="Country Name" value={orgCountryName} onChange={(e) => setOrgCountryName(e.target.value)} placeholder="Country name" className="border-slate-700 text-slate-100" />
+                      <Input aria-label="Country Code" value={orgCountryCode} onChange={(e) => setOrgCountryCode(e.target.value)} placeholder="Country code (e.g. US)" className="border-slate-700 text-slate-100" />
+                    </div>
+                    <Input aria-label="City Name" value={orgCityName} onChange={(e) => setOrgCityName(e.target.value)} placeholder="City name" className="border-slate-700 text-slate-100" />
+                    <Input aria-label="Area Name" value={orgAreaName} onChange={(e) => setOrgAreaName(e.target.value)} placeholder="Area / district name" className="border-slate-700 text-slate-100" />
+                  </div>
+                )}
               </div>
 
               <Button type="button" className="w-full" onClick={handleContinue} disabled={!storeNameInput.trim() || !storeCodeInput.trim()}>

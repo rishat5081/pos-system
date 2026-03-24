@@ -250,6 +250,7 @@ describe('app flows', () => {
     await user.click(await screen.findByRole('button', { name: 'Confirm Payment' }));
 
     expect(await screen.findByText(/Payment successful/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Print Bill' })).toBeInTheDocument();
   });
 
   it('adds customer and shows it in customer list', async () => {

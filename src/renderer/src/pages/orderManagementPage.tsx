@@ -17,6 +17,7 @@ import {
   type OrderCustomFieldType,
   type OrderStatus,
   type PaymentMethod,
+  type ReturnResolution,
   useStoreOpsStore
 } from '@/stores/storeOpsStore';
 
@@ -32,6 +33,17 @@ interface CsvColumnMap {
 interface ParsedCsvResult {
   headers: string[];
   rows: Array<Record<string, string>>;
+}
+
+interface ReturnFormState {
+  orderId: string;
+  reason: string;
+  resolution: ReturnResolution;
+  restocked: boolean;
+  productId: string;
+  quantity: string;
+  exchangeProductId: string;
+  exchangeQuantity: string;
 }
 
 const initialCsvColumnMap: CsvColumnMap = {
@@ -118,6 +130,8 @@ function resolveColumnMap(headers: string[]): CsvColumnMap {
 
 export function OrderManagementPage() {
   const orders = useStoreOpsStore((state) => state.orders);
+  const returns = useStoreOpsStore((state) => state.returns);
+  const products = useStoreOpsStore((state) => state.products);
   const globalPreferences = useStoreOpsStore((state) => state.globalPreferences);
   const orderCustomFields = useStoreOpsStore((state) => state.orderCustomFields);
   const invoices = useStoreOpsStore((state) => state.invoices);
@@ -126,6 +140,7 @@ export function OrderManagementPage() {
   const addOrderCustomField = useStoreOpsStore((state) => state.addOrderCustomField);
   const importOrders = useStoreOpsStore((state) => state.importOrders);
   const createInvoice = useStoreOpsStore((state) => state.createInvoice);
+  const createOrderReturn = useStoreOpsStore((state) => state.createOrderReturn);
   const setInvoiceStatus = useStoreOpsStore((state) => state.setInvoiceStatus);
   const markInvoiceReminderNotified = useStoreOpsStore((state) => state.markInvoiceReminderNotified);
 
@@ -140,7 +155,7 @@ export function OrderManagementPage() {
   const [retainedColumns, setRetainedColumns] = useState<Record<string, boolean>>({});
   const [csvImportMessage, setCsvImportMessage] = useState<string>('');
   const [dataExchangeMessage, setDataExchangeMessage] = useState<string>('');
-  const [selectedExportDataset, setSelectedExportDataset] = useState<'orders' | 'invoices'>('orders');
+  const [selectedExportDataset, setSelectedExportDataset] = useState<'orders' | 'invoices' | 'returns'>('orders');
   const [linkedOrderIdInput, setLinkedOrderIdInput] = useState<string>('');
   const [invoiceCustomerInput, setInvoiceCustomerInput] = useState<string>('');
   const [invoiceAmountInput, setInvoiceAmountInput] = useState<string>('');
@@ -149,6 +164,17 @@ export function OrderManagementPage() {
   const [invoiceReminderDateInput, setInvoiceReminderDateInput] = useState<string>('');
   const [invoiceNotesInput, setInvoiceNotesInput] = useState<string>('');
   const [deliveryDateByOrder, setDeliveryDateByOrder] = useState<Record<string, string>>({});
+  const [returnForm, setReturnForm] = useState<ReturnFormState>({
+    orderId: orders[0]?.id ?? '',
+    reason: '',
+    resolution: 'refund',
+    restocked: true,
+    productId: orders[0]?.items[0]?.productId ?? products[0]?.id ?? '',
+    quantity: '1',
+    exchangeProductId: products[0]?.id ?? '',
+    exchangeQuantity: '1'
+  });
+  const [returnMessage, setReturnMessage] = useState<string>('');
   const [orderPage, setOrderPage] = useState<number>(1);
   const ordersPerPage = 20;
 
@@ -215,7 +241,29 @@ export function OrderManagementPage() {
     [invoices]
   );
 
-  const selectedExportRows = selectedExportDataset === 'orders' ? orderExportRows : invoiceExportRows;
+  const returnExportRows = useMemo(
+    () =>
+      returns.map((returnRecord) => ({
+        id: returnRecord.id,
+        orderId: returnRecord.orderId,
+        customerName: returnRecord.customerName,
+        resolution: returnRecord.resolution,
+        restocked: returnRecord.restocked,
+        amount: returnRecord.amount,
+        createdAt: returnRecord.createdAt,
+        replacementOrderId: returnRecord.replacementOrderId ?? '',
+        items: returnRecord.lineItems.map((lineItem) => `${lineItem.productName} x${lineItem.quantity}`).join(' | '),
+        reason: returnRecord.reason
+      })),
+    [returns]
+  );
+
+  const selectedExportRows =
+    selectedExportDataset === 'orders'
+      ? orderExportRows
+      : selectedExportDataset === 'invoices'
+        ? invoiceExportRows
+        : returnExportRows;
 
   const applyParsedRows = (parsedRowsResult: ParsedCsvResult, sourceLabel: string): void => {
     setParsedCsvHeaders(parsedRowsResult.headers);
@@ -326,12 +374,76 @@ export function OrderManagementPage() {
 
   const handleExportDataset = async (format: DataExchangeFormat): Promise<void> => {
     await downloadDataExport({
-      title: selectedExportDataset === 'orders' ? 'Orders Export' : 'Invoices Export',
-      fileBaseName: selectedExportDataset === 'orders' ? 'ordersExport' : 'invoiceExport',
+      title:
+        selectedExportDataset === 'orders'
+          ? 'Orders Export'
+          : selectedExportDataset === 'invoices'
+            ? 'Invoices Export'
+            : 'Returns Export',
+      fileBaseName:
+        selectedExportDataset === 'orders'
+          ? 'ordersExport'
+          : selectedExportDataset === 'invoices'
+            ? 'invoiceExport'
+            : 'returnsExport',
       rows: selectedExportRows,
       format
     });
     setDataExchangeMessage(`Exported ${selectedExportDataset} as ${format}.`);
+  };
+
+  const selectedReturnOrder = orders.find((orderRecord) => orderRecord.id === returnForm.orderId);
+  const selectedReturnOrderItems = selectedReturnOrder?.items ?? [];
+
+  const handleReturnOrderChange = (orderId: string): void => {
+    const nextOrder = orders.find((orderRecord) => orderRecord.id === orderId);
+
+    setReturnForm((previous) => ({
+      ...previous,
+      orderId,
+      productId: nextOrder?.items[0]?.productId ?? '',
+      quantity: '1'
+    }));
+  };
+
+  const handleCreateReturn = (): void => {
+    try {
+      const result = createOrderReturn({
+        orderId: returnForm.orderId,
+        reason: returnForm.reason,
+        resolution: returnForm.resolution,
+        restocked: returnForm.restocked,
+        lineItems: [
+          {
+            productId: returnForm.productId,
+            quantity: Number(returnForm.quantity)
+          }
+        ],
+        exchangeItems:
+          returnForm.resolution === 'exchange'
+            ? [
+                {
+                  productId: returnForm.exchangeProductId,
+                  quantity: Number(returnForm.exchangeQuantity)
+                }
+              ]
+            : undefined
+      });
+
+      setReturnMessage(
+        result.replacementOrderId
+          ? `Return created. Exchange order ${result.replacementOrderId} was generated.`
+          : 'Return created successfully.'
+      );
+      setReturnForm((previous) => ({
+        ...previous,
+        reason: '',
+        quantity: '1',
+        exchangeQuantity: '1'
+      }));
+    } catch (error) {
+      setReturnMessage(error instanceof Error ? error.message : 'Unable to create return');
+    }
   };
 
   return (
@@ -355,10 +467,11 @@ export function OrderManagementPage() {
                 aria-label="Order Export Dataset"
                 className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
                 value={selectedExportDataset}
-                onChange={(event) => setSelectedExportDataset(event.target.value as 'orders' | 'invoices')}
+                onChange={(event) => setSelectedExportDataset(event.target.value as 'orders' | 'invoices' | 'returns')}
               >
                 <option value="orders">Orders</option>
                 <option value="invoices">Invoices</option>
+                <option value="returns">Returns</option>
               </select>
               <div className="flex flex-wrap gap-2">
                 {dataExchangeFormats.map((format) => (
@@ -654,6 +767,133 @@ export function OrderManagementPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-white/70 bg-white/90 shadow-lg">
+        <CardHeader>
+          <CardTitle>Returns, Exchanges, And Store Credit</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
+          <div className="space-y-3">
+            <div className="grid gap-3 md:grid-cols-2">
+              <select
+                aria-label="Return Order"
+                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                value={returnForm.orderId}
+                onChange={(event) => handleReturnOrderChange(event.target.value)}
+              >
+                <option value="">Select order</option>
+                {orders.map((orderRecord) => (
+                  <option key={orderRecord.id} value={orderRecord.id}>
+                    {orderRecord.id} / {orderRecord.customerName}
+                  </option>
+                ))}
+              </select>
+              <select
+                aria-label="Return Product"
+                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                value={returnForm.productId}
+                onChange={(event) => setReturnForm((previous) => ({ ...previous, productId: event.target.value }))}
+              >
+                {selectedReturnOrderItems.map((item) => (
+                  <option key={`${returnForm.orderId}-${item.productId}`} value={item.productId}>
+                    {item.productName}
+                  </option>
+                ))}
+              </select>
+              <Input
+                aria-label="Return Quantity"
+                type="number"
+                min="1"
+                value={returnForm.quantity}
+                onChange={(event) => setReturnForm((previous) => ({ ...previous, quantity: event.target.value }))}
+              />
+              <select
+                aria-label="Return Resolution"
+                className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                value={returnForm.resolution}
+                onChange={(event) =>
+                  setReturnForm((previous) => ({
+                    ...previous,
+                    resolution: event.target.value as ReturnResolution
+                  }))
+                }
+              >
+                <option value="refund">Refund</option>
+                <option value="storeCredit">Store Credit</option>
+                <option value="exchange">Exchange</option>
+              </select>
+            </div>
+            <textarea
+              className="min-h-[90px] w-full rounded-md border border-slate-200 bg-white p-3 text-sm"
+              placeholder="Return reason"
+              value={returnForm.reason}
+              onChange={(event) => setReturnForm((previous) => ({ ...previous, reason: event.target.value }))}
+            />
+            <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
+              <input
+                type="checkbox"
+                checked={returnForm.restocked}
+                onChange={(event) => setReturnForm((previous) => ({ ...previous, restocked: event.target.checked }))}
+              />
+              Restock returned units back into inventory
+            </label>
+
+            {returnForm.resolution === 'exchange' && (
+              <div className="grid gap-3 md:grid-cols-2">
+                <select
+                  aria-label="Exchange Product"
+                  className="h-10 rounded-md border border-slate-200 bg-white px-3 text-sm"
+                  value={returnForm.exchangeProductId}
+                  onChange={(event) => setReturnForm((previous) => ({ ...previous, exchangeProductId: event.target.value }))}
+                >
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name}
+                    </option>
+                  ))}
+                </select>
+                <Input
+                  aria-label="Exchange Quantity"
+                  type="number"
+                  min="1"
+                  value={returnForm.exchangeQuantity}
+                  onChange={(event) => setReturnForm((previous) => ({ ...previous, exchangeQuantity: event.target.value }))}
+                />
+              </div>
+            )}
+
+            <Button type="button" onClick={handleCreateReturn}>
+              Process Return
+            </Button>
+            {returnMessage ? <p className="text-sm text-slate-600">{returnMessage}</p> : null}
+          </div>
+
+          <div className="space-y-2">
+            {!returns.length ? <p className="text-sm text-slate-500">No returns recorded yet.</p> : null}
+            {returns.slice(0, 10).map((returnRecord) => (
+              <div key={returnRecord.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{returnRecord.orderId}</p>
+                    <p className="text-xs text-slate-500">{returnRecord.customerName}</p>
+                  </div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">{returnRecord.resolution}</p>
+                </div>
+                <p className="mt-2 text-sm text-slate-700">{formatCurrencyValue(returnRecord.amount, globalPreferences)}</p>
+                <p className="text-xs text-slate-500">
+                  {returnRecord.lineItems.map((lineItem) => `${lineItem.productName} x${lineItem.quantity}`).join(' | ')}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {returnRecord.restocked ? 'Restocked' : 'Not restocked'} • {formatDateTimeValue(returnRecord.createdAt, globalPreferences)}
+                </p>
+                {returnRecord.replacementOrderId ? (
+                  <p className="mt-1 text-xs text-slate-500">Replacement order: {returnRecord.replacementOrderId}</p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="border-white/70 bg-white/90 shadow-lg">
         <CardHeader>

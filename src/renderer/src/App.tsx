@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/mainLayout';
+import { useScheduledReports } from '@/lib/useScheduledReports';
 import { useStoreSync } from '@/lib/useStoreSync';
 import { BusinessSuitePage } from '@/pages/businessSuitePage';
+import { CompanyAnalyticsPage } from '@/pages/companyAnalyticsPage';
 import { CounterManagementPage } from '@/pages/counterManagementPage';
 import { CustomersPage } from '@/pages/customersPage';
 import { DashboardPage } from '@/pages/dashboardPage';
@@ -34,6 +36,7 @@ export default function App() {
   const hydrateSession = useAuthStore((state) => state.hydrateSession);
   const hydrateTheme = useThemeStore((state) => state.hydrateTheme);
   useStoreSync();
+  useScheduledReports();
 
   useEffect(() => {
     void hydrateSession();
@@ -63,6 +66,7 @@ export default function App() {
             <Route path="superAdmin" element={<SuperAdminPage />} />
             <Route path="userManagement" element={<UserManagementPage />} />
             <Route path="reports" element={<ReportsPage />} />
+            <Route path="companyAnalytics" element={<CompanyAnalyticsPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Route>

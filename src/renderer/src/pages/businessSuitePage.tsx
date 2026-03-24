@@ -57,6 +57,16 @@ type RestaurantTableFormState = {
   seats: string;
 };
 
+type RestaurantReservationFormState = {
+  guestName: string;
+  contactPhone: string;
+  partySize: string;
+  date: string;
+  time: string;
+  tableId: string;
+  notes: string;
+};
+
 type PriceBookFormState = {
   name: string;
   trade: 'plumbing' | 'electrical' | 'general';
@@ -154,6 +164,7 @@ export function BusinessSuitePage() {
   const staffRecords = useStoreOpsStore((state) => state.staffRecords);
   const restaurantTables = useStoreOpsStore((state) => state.restaurantTables);
   const kitchenTickets = useStoreOpsStore((state) => state.kitchenTickets);
+  const restaurantReservations = useStoreOpsStore((state) => state.restaurantReservations);
   const salonServices = useStoreOpsStore((state) => state.salonServices);
   const salonBookings = useStoreOpsStore((state) => state.salonBookings);
   const priceBookItems = useStoreOpsStore((state) => state.priceBookItems);
@@ -166,6 +177,8 @@ export function BusinessSuitePage() {
   const setRestaurantTableStatus = useStoreOpsStore((state) => state.setRestaurantTableStatus);
   const addKitchenTicket = useStoreOpsStore((state) => state.addKitchenTicket);
   const setKitchenTicketStatus = useStoreOpsStore((state) => state.setKitchenTicketStatus);
+  const addRestaurantReservation = useStoreOpsStore((state) => state.addRestaurantReservation);
+  const setRestaurantReservationStatus = useStoreOpsStore((state) => state.setRestaurantReservationStatus);
   const addSalonService = useStoreOpsStore((state) => state.addSalonService);
   const addSalonBooking = useStoreOpsStore((state) => state.addSalonBooking);
   const setSalonBookingStatus = useStoreOpsStore((state) => state.setSalonBookingStatus);
@@ -198,6 +211,15 @@ export function BusinessSuitePage() {
   const overdueInvoices = invoices.filter((invoice) => invoice.status === 'overdue').length;
 
   const [restaurantTableForm, setRestaurantTableForm] = useState<RestaurantTableFormState>({ name: '', area: '', seats: '4' });
+  const [restaurantReservationForm, setRestaurantReservationForm] = useState<RestaurantReservationFormState>({
+    guestName: '',
+    contactPhone: '',
+    partySize: '2',
+    date: '2026-03-20',
+    time: '19:00',
+    tableId: restaurantTables[0]?.id ?? '',
+    notes: ''
+  });
   const [restaurantTicketForm, setRestaurantTicketForm] = useState<RestaurantTicketFormState>({
     tableId: restaurantTables[0]?.id ?? '',
     channel: 'dineIn',
@@ -268,7 +290,7 @@ export function BusinessSuitePage() {
     restaurant: [
       { label: 'Tables', value: String(restaurantTables.length) },
       { label: 'Kitchen Tickets', value: String(kitchenTickets.length) },
-      { label: 'Orders', value: String(orders.length) },
+      { label: 'Reservations', value: String(restaurantReservations.length) },
       { label: 'Active Staff', value: String(activeStaff.length) }
     ],
     salon: [
@@ -313,6 +335,24 @@ export function BusinessSuitePage() {
       ...previous,
       itemSummary: '',
       modifiers: ''
+    }));
+  };
+
+  const handleCreateRestaurantReservation = (): void => {
+    addRestaurantReservation({
+      guestName: restaurantReservationForm.guestName,
+      contactPhone: restaurantReservationForm.contactPhone,
+      partySize: toNumber(restaurantReservationForm.partySize),
+      date: restaurantReservationForm.date,
+      time: restaurantReservationForm.time,
+      tableId: restaurantReservationForm.tableId || null,
+      notes: restaurantReservationForm.notes
+    });
+    setRestaurantReservationForm((previous) => ({
+      ...previous,
+      guestName: '',
+      contactPhone: '',
+      notes: ''
     }));
   };
 
@@ -419,7 +459,7 @@ export function BusinessSuitePage() {
   };
 
   const renderRestaurantSection = () => (
-    <div className="grid gap-6 xl:grid-cols-2">
+    <div className="grid gap-6 xl:grid-cols-3">
       {hasFeature('restaurantTables') && (
         <Card className="border-white/70 bg-white/90 shadow-lg">
           <CardHeader>
@@ -457,6 +497,97 @@ export function BusinessSuitePage() {
           </CardContent>
         </Card>
       )}
+
+      <Card className="border-white/70 bg-white/90 shadow-lg">
+        <CardHeader>
+          <CardTitle>Reservations And Waitlist</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-2">
+            <Input
+              aria-label="Reservation Guest Name"
+              placeholder="Guest name"
+              value={restaurantReservationForm.guestName}
+              onChange={(event) => setRestaurantReservationForm((previous) => ({ ...previous, guestName: event.target.value }))}
+            />
+            <Input
+              aria-label="Reservation Contact Phone"
+              placeholder="Contact phone"
+              value={restaurantReservationForm.contactPhone}
+              onChange={(event) => setRestaurantReservationForm((previous) => ({ ...previous, contactPhone: event.target.value }))}
+            />
+            <Input
+              aria-label="Reservation Party Size"
+              type="number"
+              min="1"
+              value={restaurantReservationForm.partySize}
+              onChange={(event) => setRestaurantReservationForm((previous) => ({ ...previous, partySize: event.target.value }))}
+            />
+            <select
+              aria-label="Reservation Table"
+              className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
+              value={restaurantReservationForm.tableId}
+              onChange={(event) => setRestaurantReservationForm((previous) => ({ ...previous, tableId: event.target.value }))}
+            >
+              <option value="">Waitlist only</option>
+              {restaurantTables.map((tableRecord) => (
+                <option key={tableRecord.id} value={tableRecord.id}>
+                  {tableRecord.name}
+                </option>
+              ))}
+            </select>
+            <Input
+              aria-label="Reservation Date"
+              type="date"
+              value={restaurantReservationForm.date}
+              onChange={(event) => setRestaurantReservationForm((previous) => ({ ...previous, date: event.target.value }))}
+            />
+            <Input
+              aria-label="Reservation Time"
+              type="time"
+              value={restaurantReservationForm.time}
+              onChange={(event) => setRestaurantReservationForm((previous) => ({ ...previous, time: event.target.value }))}
+            />
+          </div>
+          <Input
+            aria-label="Reservation Notes"
+            placeholder="Notes"
+            value={restaurantReservationForm.notes}
+            onChange={(event) => setRestaurantReservationForm((previous) => ({ ...previous, notes: event.target.value }))}
+          />
+          <Button type="button" className="w-full" onClick={handleCreateRestaurantReservation}>
+            Add Reservation
+          </Button>
+          <div className="space-y-2">
+            {restaurantReservations.map((reservationRecord) => (
+              <div key={reservationRecord.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{reservationRecord.guestName}</p>
+                    <p className="text-xs text-slate-500">
+                      {reservationRecord.date} {reservationRecord.time} • party {reservationRecord.partySize} • {reservationRecord.tableName}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-700">{reservationRecord.status}</span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(['waitlist', 'reserved', 'seated', 'completed', 'cancelled'] as const).map((statusItem) => (
+                    <Button
+                      key={statusItem}
+                      type="button"
+                      variant="outline"
+                      className="h-8 rounded-md px-3 text-xs"
+                      onClick={() => setRestaurantReservationStatus(reservationRecord.id, statusItem)}
+                    >
+                      {statusItem}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {hasFeature('kitchenDisplay') && (
         <Card className="border-white/70 bg-white/90 shadow-lg">
@@ -982,7 +1113,7 @@ export function BusinessSuitePage() {
           <CardHeader>
             <CardTitle>Retail Core Layer</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-3 xl:grid-cols-3">
+          <CardContent className="grid gap-3 xl:grid-cols-4">
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-semibold text-slate-900">Stock Health</p>
               <p className="mt-2 text-sm text-slate-600">Low-stock SKUs: {lowStockCount}</p>
@@ -994,6 +1125,10 @@ export function BusinessSuitePage() {
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm font-semibold text-slate-900">Delivery Load</p>
               <p className="mt-2 text-sm text-slate-600">Pending: {pendingDeliveries}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-sm font-semibold text-slate-900">Procurement</p>
+              <p className="mt-2 text-sm text-slate-600">Vendor-backed replenishment is live in Inventory.</p>
             </div>
           </CardContent>
         </Card>

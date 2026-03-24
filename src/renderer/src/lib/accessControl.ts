@@ -40,7 +40,8 @@ export const featureRoleMatrix: Record<DeploymentFeatureKey, AppUserRole[]> = {
   fieldDispatch: managementRoles,
   fieldEstimates: managementRoles,
   routeSubscriptions: managementRoles,
-  routeManifests: managementRoles
+  routeManifests: managementRoles,
+  companyAnalytics: managementRoles
 };
 
 export const privilegedAreaMatrix: Record<PrivilegedAreaKey, PermissionMatrixItem> = {
@@ -101,7 +102,14 @@ export const permissionMatrixItems: PermissionMatrixItem[] = [
     allowedRoles: featureRoleMatrix.routeSubscriptions,
     featureKey: 'routeSubscriptions'
   },
-  { key: 'routeManifests', label: 'Route Manifests', allowedRoles: featureRoleMatrix.routeManifests, featureKey: 'routeManifests' }
+  { key: 'routeManifests', label: 'Route Manifests', allowedRoles: featureRoleMatrix.routeManifests, featureKey: 'routeManifests' },
+  {
+    key: 'companyAnalytics',
+    label: 'Company Analytics',
+    allowedRoles: featureRoleMatrix.companyAnalytics,
+    featureKey: 'companyAnalytics',
+    path: '/app/companyAnalytics'
+  }
 ];
 
 const routeFeatureMap: Record<string, DeploymentFeatureKey> = {
@@ -115,7 +123,8 @@ const routeFeatureMap: Record<string, DeploymentFeatureKey> = {
   '/app/hr': 'hr',
   '/app/staff': 'hr',
   '/app/reports': 'reports',
-  '/app/settings': 'settings'
+  '/app/settings': 'settings',
+  '/app/companyAnalytics': 'companyAnalytics'
 };
 
 const routePrivilegeMap: Record<string, PrivilegedAreaKey> = {

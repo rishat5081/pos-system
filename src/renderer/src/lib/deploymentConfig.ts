@@ -91,7 +91,8 @@ export const deploymentTemplates: DeploymentTemplateRecord[] = [
       'fieldDispatch',
       'fieldEstimates',
       'routeSubscriptions',
-      'routeManifests'
+      'routeManifests',
+      'companyAnalytics'
     ]
   }
 ];
@@ -116,5 +117,6 @@ export const featureOptions: Array<{ key: DeploymentFeatureKey; label: string }>
   { key: 'fieldDispatch', label: 'Field Dispatch' },
   { key: 'fieldEstimates', label: 'Field Estimates' },
   { key: 'routeSubscriptions', label: 'Route Subscriptions' },
-  { key: 'routeManifests', label: 'Route Manifests' }
+  { key: 'routeManifests', label: 'Route Manifests' },
+  { key: 'companyAnalytics', label: 'Company Analytics' }
 ];
