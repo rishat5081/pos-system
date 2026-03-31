@@ -1,8 +1,8 @@
-# Contributing
+# 🤝 Contributing
 
-Thanks for your interest in contributing to POS System! This guide covers the development workflow and conventions.
+Thanks for your interest in contributing to **POS System**! This guide covers the development workflow and conventions.
 
-## Development Setup
+## 🛠️ Development Setup
 
 ```bash
 # Fork and clone
@@ -16,12 +16,12 @@ pnpm install
 pnpm dev
 ```
 
-### Prerequisites
+### 📋 Prerequisites
 
 - Node.js >= 20
 - pnpm >= 10
 
-## Branch Naming
+## 🌿 Branch Naming
 
 Use the format: `type/description`
 
@@ -34,7 +34,7 @@ test/add-checkout-coverage
 chore/update-dependencies
 ```
 
-## Commit Messages
+## 💬 Commit Messages
 
 We follow [Conventional Commits](https://www.conventionalcommits.org/):
 
@@ -47,7 +47,7 @@ test: add checkout flow integration tests
 chore: update eslint config
 ```
 
-### Types
+### 🏷️ Types
 
 | Type | When to use |
 |------|------------|
@@ -63,22 +63,22 @@ chore: update eslint config
 | `chore` | Maintenance tasks |
 | `revert` | Reverting a previous commit |
 
-## Pull Request Process
+## 🚀 Pull Request Process
 
-1. Create a feature branch from `main`
-2. Make your changes with clear, atomic commits
-3. Ensure all checks pass:
+1. 🌿 Create a feature branch from `main`
+2. ✏️ Make your changes with clear, atomic commits
+3. ✅ Ensure all checks pass:
    ```bash
    pnpm typecheck
    pnpm lint
    pnpm test
    pnpm build
    ```
-4. Open a PR against `main`
-5. Fill out the PR template
-6. Wait for review from @rishat5081
+4. 📤 Open a PR against `main`
+5. 📝 Fill out the PR template
+6. 👀 Wait for review from @rishat5081
 
-### PR Title
+### 📌 PR Title
 
 PR titles must follow conventional commit format (enforced by CI):
 
@@ -87,7 +87,7 @@ feat: add barcode scanner support
 fix: resolve inventory sync conflict
 ```
 
-## Code Style
+## 🎨 Code Style
 
 - TypeScript strict mode
 - ESLint with the project config (`eslint.config.js`)
@@ -95,7 +95,7 @@ fix: resolve inventory sync conflict
 - Zustand for state management
 - Zod for runtime validation
 
-## Testing
+## 🧪 Testing
 
 - **Unit/Integration**: Vitest + React Testing Library
 - **E2E**: Playwright (Chromium)
@@ -106,7 +106,7 @@ pnpm test:watch     # Watch mode
 pnpm test:e2e       # Run E2E tests
 ```
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 src/
@@ -121,6 +121,6 @@ src/
     └── types/       # Type definitions
 ```
 
-## Questions?
+## ❓ Questions?
 
-Open an issue or reach out to the maintainers.
+Open an [Issue](https://github.com/rishat5081/pos-system/issues) or reach out to the maintainers.
