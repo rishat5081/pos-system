@@ -1,77 +1,75 @@
-<div align="center">
+<p align="center">
+  <img src="https://img.shields.io/badge/Electron-41-47848F?style=for-the-badge&logo=electron&logoColor=white" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
+  <img src="https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=for-the-badge&logo=tailwindcss" />
+  <img src="https://img.shields.io/badge/Zustand-5.0-764ABC?style=for-the-badge" />
+  <img src="https://img.shields.io/github/actions/workflow/status/rishat5081/pos-system/ci.yml?style=for-the-badge&label=CI" />
+</p>
 
-# POS System
-
-**Enterprise-grade Point of Sale & Business Management Platform**
-
-[![CI](https://github.com/rishat5081/pos-system/actions/workflows/ci.yml/badge.svg)](https://github.com/rishat5081/pos-system/actions/workflows/ci.yml)
-[![E2E Tests](https://github.com/rishat5081/pos-system/actions/workflows/e2e.yml/badge.svg)](https://github.com/rishat5081/pos-system/actions/workflows/e2e.yml)
-[![Code Quality](https://github.com/rishat5081/pos-system/actions/workflows/code-quality.yml/badge.svg)](https://github.com/rishat5081/pos-system/actions/workflows/code-quality.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Electron](https://img.shields.io/badge/Electron-41-47848F?logo=electron&logoColor=white)](https://www.electronjs.org/)
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-
-A cross-platform desktop POS application built with Electron, React, TypeScript, and Tailwind CSS. Supports retail, restaurant, salon, field service, and grocery industries with a unified platform architecture.
-
-[Getting Started](#getting-started) · [Features](#features) · [Architecture](#architecture) · [Contributing](CONTRIBUTING.md)
-
-</div>
+<h1 align="center">🏪 POS System</h1>
+<p align="center"><strong>Enterprise-grade Point of Sale & Business Management Platform</strong></p>
+<p align="center">
+  A cross-platform desktop POS application built with Electron, React, TypeScript, and Tailwind CSS. Supports retail, restaurant, salon, field service, and grocery industries with a unified platform architecture.
+</p>
+<p align="center">
+  <a href="#-getting-started">⚡ Getting Started</a> · <a href="#-features">✨ Features</a> · <a href="#-architecture">🏗️ Architecture</a> · <a href="CONTRIBUTING.md">🤝 Contributing</a>
+</p>
 
 ---
 
-## Features
+## ✨ Features
 
-### Core Commerce
-- **POS Checkout** — Cart management, stock deduction, payment processing, register open/close
-- **Order Management** — Status tracking, CSV import with header analysis, custom fields, invoicing, due reminders, delivery tracking
-- **Inventory** — Categories, stock adjustments, reorder alerts, product CRUD
-- **Customers** — Loyalty programs, credit actions, activity history
-- **Dashboard** — KPI summaries, visual analytics
-- **Reports** — Operational and financial summaries
-- **Counter Management** — Assignment and active work state tracking
+### 🛒 Core Commerce
+- 💳 **POS Checkout** — Cart management, stock deduction, payment processing, register open/close
+- 📋 **Order Management** — Status tracking, CSV import with header analysis, custom fields, invoicing, due reminders, delivery tracking
+- 📦 **Inventory** — Categories, stock adjustments, reorder alerts, product CRUD
+- 👥 **Customers** — Loyalty programs, credit actions, activity history
+- 📊 **Dashboard** — KPI summaries, visual analytics
+- 📈 **Reports** — Operational and financial summaries
+- 🖥️ **Counter Management** — Assignment and active work state tracking
 
-### HR & Workforce
+### 👔 HR & Workforce
 - Employee directory, attendance, payroll, and loan tracking
 - Department transfers with export history
 - Meetings, appointments, shift planning, and calendar views
 
-### Cross-Industry Modules
-| Industry | Capabilities |
-|----------|-------------|
-| **Retail** | Standard POS, inventory, customers |
-| **Restaurant** | Table management, kitchen tickets |
-| **Salon** | Services, bookings, deposits, no-show handling |
-| **Field Service** | Job dispatch, estimates, invoice conversion |
-| **Grocery & Dairy** | Subscriptions, route manifests |
+### 🏭 Cross-Industry Modules
+| | Industry | Capabilities |
+|---|----------|-------------|
+| 🏬 | **Retail** | Standard POS, inventory, customers |
+| 🍽️ | **Restaurant** | Table management, kitchen tickets |
+| 💇 | **Salon** | Services, bookings, deposits, no-show handling |
+| 🔧 | **Field Service** | Job dispatch, estimates, invoice conversion |
+| 🛒 | **Grocery & Dairy** | Subscriptions, route manifests |
 
-### Data Exchange
+### 📤 Data Exchange
 - **Export** formats: CSV, TSV, JSON, TXT, PDF, XLSX
 - **Import** formats: CSV, TSV, JSON, TXT with header analysis
 - Full snapshot backup/restore via JSON with PDF summary
 
-### Platform Controls
+### 🔐 Platform Controls
 - Role-based access: `super_admin`, `manager`, `cashier`
 - Per-user feature overrides with job-function presets
 - Light/dark theme, i18n (locale, currency, timezone, date format)
 - Offline-first with sync controls
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Runtime** | Electron 41 |
-| **Frontend** | React 19, TypeScript 5.9 |
-| **Styling** | Tailwind CSS 3, shadcn/ui, Radix UI |
-| **State** | Zustand 5.0 |
-| **Forms** | React Hook Form + Zod validation |
-| **Routing** | React Router 6 |
-| **Database** | Drizzle ORM (SQLite) |
-| **Build** | Vite 7, electron-vite 4 |
-| **Testing** | Vitest 4, React Testing Library, Playwright |
-| **Linting** | ESLint 9 with TypeScript plugin |
+| | Layer | Technology |
+|---|-------|-----------|
+| ⚡ | **Runtime** | Electron 41 |
+| ⚛️ | **Frontend** | React 19, TypeScript 5.9 |
+| 🎨 | **Styling** | Tailwind CSS 3, shadcn/ui, Radix UI |
+| 🧠 | **State** | Zustand 5.0 |
+| 📝 | **Forms** | React Hook Form + Zod validation |
+| 🧭 | **Routing** | React Router 6 |
+| 🗄️ | **Database** | Drizzle ORM (SQLite) |
+| 🔨 | **Build** | Vite 7, electron-vite 4 |
+| 🧪 | **Testing** | Vitest 4, React Testing Library, Playwright |
+| 🔍 | **Linting** | ESLint 9 with TypeScript plugin |
 
-## Architecture
+## 🏗️ Architecture
 
 ```
 src/
@@ -89,14 +87,14 @@ src/
         └── types/         # TypeScript type definitions
 ```
 
-## Getting Started
+## ⚡ Getting Started
 
-### Prerequisites
+### 📋 Prerequisites
 
 - **Node.js** >= 20
 - **pnpm** >= 10
 
-### Installation
+### 📥 Installation
 
 ```bash
 # Clone the repository
@@ -110,13 +108,13 @@ pnpm install
 pnpm dev
 ```
 
-### Demo Credentials
+### 🔑 Demo Credentials
 
 | Role | Username | Password |
 |------|----------|----------|
 | Super Admin | `admin` | `admin123` |
 
-### First-Run Setup
+### 🧙 First-Run Setup
 
 After login, the setup wizard guides you through:
 1. **Deployment template** — Retail, Restaurant, Salon, Field Service, Grocery + Dairy, or All In One
@@ -126,7 +124,7 @@ After login, the setup wizard guides you through:
 
 The wizard can be re-opened from Settings by a `super_admin` without losing operational data.
 
-## Scripts
+## ⌨️ Scripts
 
 | Command | Description |
 |---------|-------------|
@@ -142,9 +140,9 @@ The wizard can be re-opened from Settings by a `super_admin` without losing oper
 | `pnpm db:migrate:create` | Generate new migration |
 | `pnpm db:seed` | Seed database with sample data |
 
-## Access Control
+## 🔐 Access Control
 
-### Role Hierarchy
+### 👥 Role Hierarchy
 
 ```
 super_admin
@@ -167,11 +165,11 @@ cashier
 └── Customers
 ```
 
-### Per-User Overrides
+### 🔧 Per-User Overrides
 
 Features can be explicitly `allowed` or `revoked` per account, applied on top of role defaults. Job-function presets provide curated override bundles for common roles.
 
-## CI/CD
+## 🏗️ CI/CD
 
 This project uses GitHub Actions for continuous integration:
 
@@ -185,7 +183,7 @@ This project uses GitHub Actions for continuous integration:
 | **Stale** | Daily cron | Auto-close inactive issues/PRs |
 | **PR Checks** | PR events | Conventional commit titles, branch naming |
 
-## Documentation
+## 📚 Documentation
 
 | Document | Description |
 |----------|-------------|
@@ -200,16 +198,19 @@ This project uses GitHub Actions for continuous integration:
 | [docs/TESTING.md](docs/TESTING.md) | Test strategy, writing tests, CI |
 | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Build, release, CI/CD pipeline |
 
-## Contributing
+## 🤝 Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards, and pull request guidelines.
 
-## License
+## 📄 License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-<div align="center">
-  Built with Electron, React, and TypeScript
-</div>
+<p align="center">
+  Built with ⚡ Electron &nbsp;·&nbsp; ⚛️ React &nbsp;·&nbsp; 🔷 TypeScript &nbsp;·&nbsp; 🎨 Tailwind CSS
+</p>
+<p align="center">
+  <sub>Made by <a href="https://github.com/rishat5081">@rishat5081</a></sub>
+</p>
